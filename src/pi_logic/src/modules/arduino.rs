@@ -19,4 +19,10 @@ impl ArduinoBridge {
         self.port.flush()?;
         Ok(())
     }
+
+    pub fn send_bytes(&mut self, bytes: &[u8]) -> Result<(), std::io::Error> {
+        self.port.write_all(bytes)?;
+        self.port.flush()?;
+        Ok(())
+    }
 }
