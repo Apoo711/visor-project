@@ -4,5 +4,25 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
-tokio-serial = "5.4.4"
+base64 = "0.22"
+
+# Image handling / base64 encoding
+image = "0.25"
+
+# HTTP client & JSON handling for the Gemini API
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Hardware / Serial comms with Arduino
+serialport = "4.3"
+# Async runtime for non-blocking API calls & loops
+tokio = { version = "1.0", features = ["full"] }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+debug = false
+strip = "symbols"
