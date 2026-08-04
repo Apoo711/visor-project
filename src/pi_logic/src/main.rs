@@ -1,10 +1,7 @@
 mod modules;
 
-use std::time::Duration;
 
 use modules::{arduino::ArduinoBridge, gemini::GeminiClient, input::capture_frame};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio_serial::{SerialPortBuilderExt, SerialStream};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
