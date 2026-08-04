@@ -18,6 +18,7 @@ serde_json = "1.0"
 serialport = "4.3"
 # Async runtime for non-blocking API calls & loops
 tokio = { version = "1.0", features = ["full"] }
+tokio-serial = "5.5.0"
 
 [profile.release]
 opt-level = 3

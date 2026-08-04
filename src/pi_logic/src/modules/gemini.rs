@@ -35,14 +35,15 @@ impl GeminiClient {
             }]
         });
 
-        let res = self.client.post(&url)
+        let res = self
+            .client
+            .post(&url)
             .json(&body)
             .send()
             .await?
             .json::<serde_json::Value>()
             .await?;
 
-        // Extract returned text
         let response_text = res["candidates"][0]["content"]["parts"][0]["text"]
             .as_str()
             .unwrap_or("HOLD")
