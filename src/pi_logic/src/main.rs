@@ -5,7 +5,9 @@ use modules::{
 };
 
 async fn openLink(link: String) -> Result<(), Box<dyn std::error::Error>> {
-    println!("Opening video {} ...", link)
+    println!("Opening video {} ...", link);
+
+    return Ok(());
 }
 
 #[tokio::main]
