@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use reqwest::Client;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 struct YouTubeSearchResponse {
@@ -36,9 +36,12 @@ impl YouTubeClient {
         }
     }
 
-    pub async fn fetch_top_video(&self, query: &str) -> Result<Option<(String, String)>, Box<dyn std::error::Error>> {
+    pub async fn fetch_top_video(
+        &self,
+        query: &str,
+    ) -> Result<Option<(String, String)>, Box<dyn std::error::Error>> {
         let url = "https://www.googleapis.com/youtube/v3/search";
-        
+
         let res: YouTubeSearchResponse = self
             .client
             .get(url)

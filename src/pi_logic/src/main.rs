@@ -1,6 +1,5 @@
 mod modules;
 
-
 use modules::{arduino::ArduinoBridge, gemini::GeminiClient, input::capture_frame};
 
 #[tokio::main]
@@ -14,14 +13,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     loop {
         if let Ok(image_bytes) = capture_frame("/tmp/visor_frame.jpg") {
-
             match ai_client.analyze_image(&image_bytes).await {
                 Ok(command) => {
-                    println!("AI Result: {}", command);
+                    println!("AI Result: {:#?}", command);
 
-                    if command.contains("OPEN") {
+                    if command.reasoning.contains("OPEN") || command.can_help {
                         let _ = arduino.send_command(b'O');
-                    } else if command.contains("CLOSE") {
+                    } else if command.reasoning.contains("CLOSE") || !command.can_help {
                         let _ = arduino.send_command(b'C');
                     }
                 }

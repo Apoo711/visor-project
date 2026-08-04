@@ -1,4 +1,4 @@
-use base64::{engine::general_purpose, Engine as _};
+use base64::{Engine as _, engine::general_purpose};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -31,7 +31,10 @@ impl GeminiClient {
         }
     }
 
-    pub async fn analyze_image(&self, image_bytes: &[u8]) -> Result<VisorAnalysis, Box<dyn std::error::Error>> {
+    pub async fn analyze_image(
+        &self,
+        image_bytes: &[u8],
+    ) -> Result<VisorAnalysis, Box<dyn std::error::Error>> {
         let base64_string = general_purpose::STANDARD.encode(image_bytes);
         let url = "https://generativelanguage.googleapis.com/v1beta/interactions";
 
