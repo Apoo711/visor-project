@@ -4,34 +4,31 @@ use modules::{
     arduino::ArduinoBridge, gemini::GeminiClient, input::capture_frame, youtube::YouTubeClient,
 };
 
-async fn openLink(link: String) -> Result<(), Box<dyn std::error::Error>> {
-    println!("Opening video {} ...", link);
-
-    return Ok(());
-}
+use log::{debug, error, info, trace, warn};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Starting V.I.S.O.R. Core Process...");
+
+    env_logger::init();
+
+    info!("Starting V.I.S.O.R. Core Process...");
 
     let mut arduino = ArduinoBridge::new("/dev/ttyAMA0", 9600)?;
 
     let gemini_api_key = std::env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY not set");
     let ai_client = GeminiClient::new(gemini_api_key);
 
-    let yt_api_key = std::env::var("YOUTUBE_API_KEY")
-        .or_else(|_| std::env::var("GEMINI_API_KEY"))
-        .ok();
-    let yt_client = yt_api_key.map(YouTubeClient::new);
+    let yt_api_key = std::env::var("YOUTUBE_API_KEY").expect("YOUTUBE_API_KEY not set");
+    let yt_client = YouTubeClient::new(yt_api_key);
 
     loop {
         if let Ok(image_bytes) = capture_frame("/tmp/visor_frame.jpg") {
             match ai_client.analyze_image(&image_bytes).await {
                 Ok(analysis) => {
-                    println!("=== AI Assessment ===");
-                    println!("Can Help: {}", analysis.can_help);
-                    println!("Reasoning: {}", analysis.reasoning);
-                    println!(
+                    debug!("=== AI Assessment ===");
+                    debug!("Can Help: {}", analysis.can_help);
+                    debug!("Reasoning: {}", analysis.reasoning);
+                    debug!(
                         "Dispense Signals -> Bandage: {}, Alcohol Pad: {}, Gauze Pad: {}",
                         analysis.dispense.bandage,
                         analysis.dispense.alcohol_pad,
@@ -54,21 +51,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
 
                         if let Some(query) = &analysis.video_search_query {
-                            if let Some(yt) = &yt_client {
-                                println!("Searching YouTube for instructional video: '{}'", query);
-                                match yt.fetch_top_video(query).await {
-                                    Ok(Some((watch_url, title))) => {
-                                        println!(
-                                            "Instructional Video Found: '{}' -> {}",
-                                            title, watch_url
-                                        );
+                            println!("Searching YouTube for instructional video: '{}'", query);
+                            match yt_client.fetch_top_video(query).await {
+                                Ok(Some((watch_url, title))) => {
+                                    println!(
+                                        "Instructional Video Found: '{}' -> {}",
+                                        title, watch_url
+                                    );
+                                    if let Err(e) = yt_client.display_video(&watch_url).await {
+                                        eprintln!("Failed to display video: {}", e);
                                     }
-                                    Ok(None) => println!(
-                                        "No instructional video found for query: '{}'",
-                                        query
-                                    ),
-                                    Err(e) => eprintln!("YouTube API error: {}", e),
                                 }
+                                Ok(None) => println!(
+                                    "No instructional video found for query: '{}'",
+                                    query
+                                ),
+                                Err(e) => eprintln!("YouTube API error: {}", e),
                             }
                         }
                     } else {
