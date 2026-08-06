@@ -4,7 +4,7 @@ use modules::{
     arduino::ArduinoBridge, gemini::GeminiClient, input::capture_frame, youtube::YouTubeClient,
 };
 
-use log::{debug, error, info, trace, warn};
+use log::{debug, error, info};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -42,41 +42,41 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             analysis.dispense.alcohol_pad,
                             analysis.dispense.gauze_pad
                         );
-                        println!(
+                        debug!(
                             "Transmitting binary dispense command to Arduino: {}",
                             cmd_str.trim()
                         );
                         if let Err(e) = arduino.send_bytes(cmd_str.as_bytes()) {
-                            eprintln!("Serial communication error: {}", e);
+                            error!("Serial communication error: {}", e);
                         }
 
                         if let Some(query) = &analysis.video_search_query {
-                            println!("Searching YouTube for instructional video: '{}'", query);
+                            info!("Searching YouTube for instructional video: '{}'", query);
                             match yt_client.fetch_top_video(query).await {
                                 Ok(Some((watch_url, title))) => {
-                                    println!(
+                                    debug!(
                                         "Instructional Video Found: '{}' -> {}",
                                         title, watch_url
                                     );
                                     if let Err(e) = yt_client.display_video(&watch_url).await {
-                                        eprintln!("Failed to display video: {}", e);
+                                        error!("Failed to display video: {}", e);
                                     }
                                 }
-                                Ok(None) => println!(
+                                Ok(None) => debug!(
                                     "No instructional video found for query: '{}'",
                                     query
                                 ),
-                                Err(e) => eprintln!("YouTube API error: {}", e),
+                                Err(e) => debug!("YouTube API error: {}", e),
                             }
                         }
                     } else {
-                        println!(
+                        debug!(
                             "Condition cannot be treated with available supplies or requires emergency care."
                         );
                         let _ = arduino.send_bytes(b"000\n");
                     }
                 }
-                Err(e) => eprintln!("API Analysis Error: {}", e),
+                Err(e) => error!("API Analysis Error: {}", e),
             }
         }
 

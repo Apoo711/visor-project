@@ -3,6 +3,7 @@ use futures_util::StreamExt;
 use reqwest::Client;
 use serde::Deserialize;
 use std::time::Duration;
+use log::{debug, info};
 
 #[derive(Debug, Deserialize)]
 struct YouTubeSearchResponse {
@@ -79,7 +80,7 @@ impl YouTubeClient {
             format!("https://www.youtube.com/watch?v={}", input)
         };
 
-        println!("Launching browser to play video: {}", target_url);
+        info!("Launching browser to play video: {}", target_url);
 
         let (mut browser, mut handler) = Browser::launch(
             BrowserConfig::builder()
@@ -99,7 +100,7 @@ impl YouTubeClient {
 
         let page = browser.new_page(&target_url).await?;
 
-        println!("Waiting for video playback to complete...");
+        debug!("Waiting for video playback to complete...");
         loop {
             tokio::time::sleep(Duration::from_secs(2)).await;
 
@@ -116,7 +117,7 @@ impl YouTubeClient {
                 Ok(value) => {
                     if let Some(status) = value.value().and_then(|v| v.as_str()) {
                         if status == "ended" {
-                            println!("Video playback completed.");
+                            debug!("Video playback completed.");
                             break;
                         }
                     }
@@ -127,10 +128,10 @@ impl YouTubeClient {
             }
         }
 
-        println!("Waiting 15 seconds before closing the browser window...");
+        debug!("Waiting 15 seconds before closing the browser window...");
         tokio::time::sleep(Duration::from_secs(15)).await;
 
-        println!("Closing browser...");
+        info!("Closing browser...");
         browser.close().await?;
         let _ = handle.await;
 
