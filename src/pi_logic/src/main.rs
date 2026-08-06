@@ -1,14 +1,12 @@
 mod modules;
 
+use log::{debug, error, info};
 use modules::{
     arduino::ArduinoBridge, gemini::GeminiClient, input::capture_frame, youtube::YouTubeClient,
 };
 
-use log::{debug, error, info};
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     env_logger::init();
 
     info!("Starting V.I.S.O.R. Core Process...");
@@ -62,10 +60,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         error!("Failed to display video: {}", e);
                                     }
                                 }
-                                Ok(None) => debug!(
-                                    "No instructional video found for query: '{}'",
-                                    query
-                                ),
+                                Ok(None) => {
+                                    debug!("No instructional video found for query: '{}'", query)
+                                }
                                 Err(e) => debug!("YouTube API error: {}", e),
                             }
                         }

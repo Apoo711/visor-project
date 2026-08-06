@@ -1,9 +1,10 @@
+use std::time::Duration;
+
 use chromiumoxide::browser::{Browser, BrowserConfig};
 use futures_util::StreamExt;
+use log::{debug, info};
 use reqwest::Client;
 use serde::Deserialize;
-use std::time::Duration;
-use log::{debug, info};
 
 #[derive(Debug, Deserialize)]
 struct YouTubeSearchResponse {
@@ -122,9 +123,7 @@ impl YouTubeClient {
                         }
                     }
                 }
-                Err(_) => {
-                    
-                }
+                Err(_) => {}
             }
         }
 
@@ -138,4 +137,3 @@ impl YouTubeClient {
         Ok(())
     }
 }
-
