@@ -9,6 +9,14 @@ use modules::{
     youtube::{DisplayManager, YouTubeClient},
 };
 
+#[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+#[global_allocator]
+static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
+
+#[cfg(all(target_os = "windows", target_arch = "x86_64"))]
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();

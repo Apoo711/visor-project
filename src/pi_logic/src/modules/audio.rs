@@ -39,7 +39,6 @@ impl WakeWordDetector {
             default_config.sample_format()
         );
 
-        // Configure Rustpotter
         let mut config = RustpotterConfig::default();
         config.detector.avg_threshold = 0.5;
         config.detector.threshold = 0.55;
@@ -47,7 +46,6 @@ impl WakeWordDetector {
         let mut rustpotter = Rustpotter::new(&config)
             .map_err(|e| format!("Failed to create Rustpotter detector: {}", e))?;
 
-        // Check if custom .rpw file is provided
         let wakeword_path = "assets/visor_help.rpw";
         if Path::new(wakeword_path).exists() {
             info!(
