@@ -2,72 +2,122 @@
 **Year 12 Systems Engineering SAT Project**  
 Designed and Developed by Aryan Gupta
 
-(NEED CAD RENDER)
+---
 
 ## Project Overview
 
-**V.I.S.O.R.** is an automated, AI-driven first aid console designed to address the **"Panic Gap"--**the critical delay in first aid treatment caused by shock, hesitation, or a lack of medical knowledge during minor workshop emergencies.
+**V.I.S.O.R.** is an automated, AI-driven first aid triage and dispensing console designed to eliminate the **"Panic Gap"**—the critical delay in first aid treatment caused by shock, hesitation, or a lack of medical knowledge during minor workshop emergencies.
 
-Current first aid kits are entirely passive, forcing an injured, panicked user to navigate supplies and manuals under stress. V.I.S.O.R. eliminates this cognitive load. By utilizing a dual-microcontroller architecture and the Gemini AI API, the system takes visual or audio distress signals, autonomously diagnoses the injury, and actively dispenses the correct medical supply while playing a relevant instructional video.
+Traditional first aid kits are completely passive, requiring an injured and panicked user to navigate supplies and instructional manuals under acute cognitive stress. V.I.S.O.R. automates this process. By combining a high-performance dual-controller architecture with the multimodal **Gemini 3.7 Flash API**, the system:
+1. Listens for the **"VISOR help"** voice activation wake word.
+2. Captures an immediate snapshot of the injury via the camera.
+3. Autonomously diagnoses the condition and formulates a treatment and dispensing plan.
+4. Electromechanically dispenses the required medical supplies from active rack-and-pinion cartridges.
+5. Displays a relevant first-aid video on the kiosk display, automatically returning to standby once guidance concludes.
+
+---
 
 ## The Engineering Challenge & Solution
 
-#### The Problem with Existing Solutions
+#### The Problem with Existing Dispensing Solutions
+During initial research and experimentation, standard gravity-fed chutes, solenoid trapdoors, and spiral vending coils were evaluated. Testing revealed that **soft, flexible medical packaging (such as bandage and pad wrappers) frequently snags and jams in passive systems**, causing an unacceptable failure rate during emergencies.
 
-During the research phase, standard gravity-fed mechanisms, solenoid trapdoors, and spiral vending coils were evaluated. Testing revealed a fatal flaw: **soft, flexible medical packaging (like bandage wrappers) frequently snag and jam in gravity or coil-based systems,** leading to an unacceptable failure rate during emergencies. Additionally, acoustic voice-activation systems failed reliably in 80+ decibel workshop environments.
+#### The V.I.S.O.R. Mechanical Solution
+To guarantee **>90% dispensing reliability**, V.I.S.O.R. employs a custom 3D-printed **Rack and Pinion** mechanism. Driven by FEETECH FS90R continuous rotation micro servos, the mechanism translates rotational energy into positive linear horizontal thrust. A pusher sled forcibly guides the flexible package out of the cartridge, preventing friction jams and ensuring reliable dispensing.
 
-#### The V.I.S.O.R. Solution
-
-To guarantee a **>90% dispensing reliability,** V.I.S.O.R. utilizes a custom 3D-printed **Rack and Pinion** mechanism. Driven by a continuous rotation servo, this system translates rotational kinetic energy into linear horizontal thrust. A wedge-shaped "pusher sled" actively forces the flexible packet through a tight 2.5mm slit, entirely overcoming friction and preventing jams.
-
-For the interface, visual AI processing (via a camera) was selected to circumvent the unreliability of workshop acoustics.
+---
 
 ## System Architecture
 
-V.I.S.O.R. relies on a complex, integrated **Dual-Microcontroller Architecture** to separate high-level logical processing from low-level electromechanical actuation.
+V.I.S.O.R. utilizes a robust **Dual-Microcontroller Architecture** to cleanly decouple high-level AI reasoning and UI management from low-level electromechanical PWM motor timing:
 
-- **High-Level Logic (Raspberry Pi 4):** Runs a Python environment to handle USB camera/microphone input, securely query the Gemini Vision-Language API, and display YouTube first aid tutorials on an integrated 7-inch HDMI touchscreen.
+```
+                      +---------------------------------------------------+
+                      |             Raspberry Pi 4 (Rust)                 |
+                      |  - Offline Wake Word Spotter ("VISOR help")       |
+                      |  - Camera Capture (`rpicam-still`)                |
+                      |  - Gemini 3.7 Flash Vision AI Assessment          |
+                      |  - YouTube Data API v3 Instructional Search       |
+                      |  - Fullscreen Chromium Kiosk Display Manager      |
+                      +-------------------------+-------------------------+
+                                                |
+                                    USB Serial  | (<DISP:b,a,g>\n)
+                                    9600 Baud   | (ACK:DISP:b,a,g / Status)
+                                                v
+                      +-------------------------+-------------------------+
+                      |               Arduino Uno (C++)                   |
+                      |  - Packet Framing & Handshake Parser              |
+                      |  - Hardware PWM Timing & Auto-Detach              |
+                      |  - 3x FS90R Continuous Rotation Micro Servos      |
+                      |  - Active Linear Rack-and-Pinion Dispensers       |
+                      +---------------------------------------------------+
+```
 
-- **Serial Communication (UART):** The Pi parses the AI's diagnosis into a deterministic binary string (e.g., `010` for Gauze) and transmits it via asynchronous serial communication to the motor controller.
+### Data & Execution Flow
+1. **Standby**: The kiosk display presents a sleek, medical-grade "VISOR: Ready to Help" screen while the audio subsystem listens for the wake word.
+2. **Wake Trigger**: The user says *"VISOR help"*, detected offline via `rustpotter` and `cpal`.
+3. **Capture & Vision Triage**: The camera captures `/tmp/visor_frame.jpg` and queries the Gemini 3.7 Flash API with structured JSON constraints, receiving boolean dispensing flags (`bandage`, `alcohol_pad`, `gauze_pad`).
+4. **Actuation**: The Pi transmits a framed packet (e.g. `<DISP:1,0,1>\n`) over USB Serial. The Arduino acknowledges the command and drives the corresponding FS90R servos through a push $\rightarrow$ dwell $\rightarrow$ retract $\rightarrow$ detach cycle.
+5. **Instructional Video & Return**: The Pi resolves the top instructional video via the YouTube Data API, autoplays the video in the Chromium kiosk, monitors completion (`video.ended`), and returns the screen to the standby UI.
 
-- **Low-Level Actuation (Arduino Uno R3):** The Arduino reads the serial bytes and generates precise Pulse Width Modulation (PWM) signals to drive the FS90R continuous rotation servos. It also monitors SPDT micro limit switches for closed-loop mechanical feedback, ensuring the rack returns to its exact "home" position after dispensing.
+---
 
 ## Technologies & Materials
 
-#### Hardware & Electronics
+### Hardware & Electronics
+- **Compute:** Raspberry Pi 4 Model B (4GB), Arduino Uno R3
+- **Actuators:** 3x FEETECH FS90R Continuous Rotation Micro Servos
+- **Sensors & Input:** Raspberry Pi Camera Module V3, USB Microphone / ALSA capture
+- **Display:** Integrated HDMI Display running fullscreen Chromium kiosk
+- **Power:** Regulated 5V DC power supply with common-ground integration
 
-- **Microcontrollers:** Raspberry Pi 4 Model B (4GB), Arduino Uno R3
+### Software Stack
+- **Raspberry Pi Core Logic ([`src/pi_logic/`](./src/pi_logic/)):**
+  - **Language:** Rust (2024 Edition)
+  - **Async Runtime:** `tokio`
+  - **Wake Word Detection:** `rustpotter` (pure Rust offline spotter) + `cpal`
+  - **AI & Cloud API:** `reqwest`, `serde`, `serde_json` (Google Gemini 3.7 Flash & YouTube Data API v3)
+  - **Browser Kiosk Automation:** `chromiumoxide`
+  - **Serial Bridge:** `serialport`
+  - **User Interface:** HTML5, CSS3 Glassmorphism, Google Fonts (`Outfit` & `Space Grotesk`)
+- **Arduino Firmware ([`src/arduino_control/`](./src/arduino_control/)):**
+  - **Language:** C++ (Arduino Framework)
+  - **Libraries:** `Servo.h`
+  - **Mechanisms:** Non-blocking ASCII packet framing, PWM servo timing, idle power auto-detach
 
-- **Actuators:** 3x FS90R Continuous Rotation Servos
+### Manufacturing & Fabrication
+- **FDM 3D Printing:** PLA bioplastic for modular cartridge bodies, linear gear racks, and drive pinions with precise sliding tolerances.
+- **Enclosure:** CNC / Laser-cut Pine Plywood chassis providing structural rigidity and mounting bezels for screen, camera, and dispensing bays.
 
-- **Sensors:** Raspberry Pi Camera Module V3, USB Microphone, SPDT Micro Limit Switches
+---
 
-- **Interface:** 7-inch HDMI Touchscreen Display
+## Repository Structure
 
-- **Power:** Isolated 240V AC to 5V DC (3A) mains adapter
+```
+├── cad/                     # 3D models (STL/STEP) for chassis & rack-and-pinion cartridges
+├── docs/                    # SAT portfolio documentation, Criterion reports, and LaTeX sources
+├── src/
+│   ├── README.md            # Overview of source architecture
+│   ├── pi_logic/            # Rust application for Raspberry Pi 4
+│   │   ├── assets/          # Kiosk UI (standby.html) and audio models
+│   │   ├── src/             # Rust modules (audio, camera, gemini, serial, youtube)
+│   │   └── Cargo.toml       # Rust dependencies and configuration
+│   └── arduino_control/     # C++ firmware for Arduino Uno
+│       ├── arduino_control.ino # Arduino sketch for FS90R servo actuation
+│       └── README.md        # Pinouts, wiring diagrams, and calibration guide
+└── tests/                   # Hardware and mechanical test scripts
+```
 
-#### Manufacturing Processes
+---
 
-- **Fused Deposition Modelling (FDM) 3D Printing:** Used PLA bioplastic to rapidly prototype and manufacture the complex involute gear teeth for the rack and pinion cartridges with strict 1.5mm sliding tolerances.
+## Performance Targets
 
-- **Laser Cutting / CNC:** The main chassis is constructed from 6mm Pine Plywood for high tensile strength, acoustic dampening, and sustainability, featuring precision-cut bezels for the screen and dispensing tray.
+- **Response Latency:** `< 15 Seconds` from user voice prompt to active dispensing and video playback.
+- **Dispensing Reliability:** `> 90% Success Rate` achieved via active rack-and-pinion horizontal thrust.
+- **Interpretation Accuracy:** `100% Logical Match` between the injury assessment and the dispensed supply combination.
 
-#### Software Stack
+---
 
-- **Python 3:** API integration, JSON parsing, UI handling, and serial transmission.
+## License
 
-- **C++ (Arduino):** Interrupt polling, hardware PWM timing, and serial reading.
-
-- **Google Gemini API:** Cloud-based Vision-Language Model processing.
-
-## Performance Metrics
-
-The system was designed and evaluated against strict operational criteria:
-
-- **Response Latency:** `< 15 Seconds` (From user input to video display and motor actuation) to effectively bridge the "Panic Gap".
-
-- **Dispensing Reliability:** `> 90% Success Rate` achieved via the active linear thrust of the rack and pinion mechanism.
-
-- **Interpretation Accuracy**: `100% Logical Match` between the user's spoken/visual distress signal and the dispensed item.
-
-*This repository contains the CAD models (STL/DXF files), system schematics, Arduino C++ code, and Python scripts developed for this portfolio project.*
+This project is licensed under the [MIT License](./LICENSE).
