@@ -67,6 +67,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 analysis.dispense.gauze_pad,
                             ) {
                                 error!("Serial communication error to Arduino: {}", e);
+                            } else if let Ok(ack) = arduino.read_response() {
+                                if !ack.is_empty() {
+                                    info!("Arduino Acknowledgment: {}", ack);
+                                }
                             }
 
                             if let Some(query) = &analysis.video_search_query {
@@ -96,6 +100,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 "Condition cannot be treated with available supplies or requires emergency care."
                             );
                             let _ = arduino.send_hold();
+                            if let Ok(ack) = arduino.read_response() {
+                                if !ack.is_empty() {
+                                    info!("Arduino Acknowledgment: {}", ack);
+                                }
+                            }
                         }
                     }
                     Err(e) => {

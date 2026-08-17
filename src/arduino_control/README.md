@@ -15,6 +15,9 @@ This directory contains the C++ firmware for the Arduino Uno microcontroller res
 | **Ground (GND)** | All Servos | **GND Rail** (Common GND) | Brown/Black |
 | **Status LED** | System Activity | **Digital Pin 13** | Built-in LED |
 
+> [!IMPORTANT]
+> **Common Ground**: Ensure that if an external 5V/6V power supply is used for the servos, the external power ground and the Arduino ground are tied together (**Common Ground**).
+
 ---
 
 ## Serial Communication Protocol
@@ -55,3 +58,12 @@ This directory contains the C++ firmware for the Arduino Uno microcontroller res
    const unsigned long TIME_PAUSE_MS   = 150;  // Dwell buffer
    const unsigned long TIME_RETRACT_MS = 2300; // Retract rack to home
    ```
+
+---
+
+## How to Flash / Upload
+
+1. Connect the Arduino Uno to your computer via USB.
+2. Open [`arduino_control.ino`](./arduino_control.ino) in the Arduino IDE (or use the Arduino CLI / PlatformIO).
+3. Select Board: **Arduino Uno** and select the appropriate serial port.
+4. Click **Upload**.
