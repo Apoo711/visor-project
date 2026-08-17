@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V.I.S.O.R. - Ready to Help</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #080c14;
+      --bg-gradient: radial-gradient(circle at 50% 20%, #0d1e38 0%, #080c14 80%);
+      --card-bg: rgba(16, 26, 44, 0.65);
+      --card-border: rgba(45, 120, 255, 0.2);
+      --card-hover: rgba(45, 120, 255, 0.35);
+      --accent-blue: #2563eb;
+      --accent-cyan: #00f2fe;
+      --accent-teal: #06b6d4;
+      --accent-green: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glow-color: rgba(0, 242, 254, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 2.5rem;
+    }
+
+    /* Ambient dynamic glow in background */
+    .glow-orb {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      filter: blur(60px);
+      z-index: 0;
+      pointer-events: none;
+      animation: pulseGlow 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0.5; }
+      100% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.9; }
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: #080c14;
+      font-size: 1.4rem;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+    }
+
+    .brand-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--accent-teal);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.5rem 1.1rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-green);
+      backdrop-filter: blur(10px);
+    }
+
+    .status-pulse {
+      width: 9px;
+      height: 9px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-green);
+      animation: blink 2s infinite ease-in-out;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.75); }
+    }
+
+    /* Main Core Display */
+    main {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .visual-ring-container {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .visual-ring {
+      position: absolute;
+      inset: 0;
+      border: 2px dashed rgba(0, 242, 254, 0.4);
+      border-radius: 50%;
+      animation: rotateRing 20s linear infinite;
+    }
+
+    .visual-ring-inner {
+      position: absolute;
+      inset: 15px;
+      border: 2px solid rgba(37, 99, 235, 0.5);
+      border-radius: 50%;
+      animation: rotateRingRev 15s linear infinite;
+    }
+
+    @keyframes rotateRing {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes rotateRingRev {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+
+    .mic-icon-circle {
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, rgba(13, 30, 56, 0.8) 100%);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 35px var(--glow-color);
+    }
+
+    .mic-icon-circle svg {
+      width: 42px;
+      height: 42px;
+      fill: var(--accent-cyan);
+    }
+
+    h1.hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+      background: linear-gradient(135deg, #ffffff 30%, #60a5fa 70%, #00f2fe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .trigger-prompt-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: rgba(13, 30, 56, 0.7);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      padding: 0.9rem 1.8rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+      backdrop-filter: blur(12px);
+      margin-bottom: 2rem;
+    }
+
+    .trigger-tag {
+      background: linear-gradient(135deg, #00f2fe, #2563eb);
+      color: #080c14;
+      font-weight: 800;
+      font-size: 1.1rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .trigger-text {
+      font-size: 1.2rem;
+      color: #e2e8f0;
+      font-weight: 400;
+    }
+
+    .description-text {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 620px;
+      line-height: 1.6;
+    }
+
+    /* Cartridges / Supplies Grid */
+    footer {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .supplies-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .supplies-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      width: 100%;
+    }
+
+    .supply-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 1.25rem 1.5rem;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .supply-card:hover {
+      border-color: var(--card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 110, 255, 0.15);
+    }
+
+    .supply-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(37, 99, 235, 0.15);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--accent-cyan);
+    }
+
+    .supply-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .supply-name {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #f1f5f9;
+    }
+
+    .supply-meta {
+      font-size: 0.8rem;
+      color: var(--accent-teal);
+      margin-top: 2px;
+    }
+
+    /* Wave effect animation for voice listening */
+    .sound-bars {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 20px;
+    }
+
+    .bar {
+      width: 3px;
+      height: 100%;
+      background: var(--accent-cyan);
+      border-radius: 2px;
+      animation: soundWave 1.2s ease-in-out infinite alternate;
+    }
+
+    .bar:nth-child(2) { animation-delay: 0.2s; }
+    .bar:nth-child(3) { animation-delay: 0.4s; }
+    .bar:nth-child(4) { animation-delay: 0.1s; }
+    .bar:nth-child(5) { animation-delay: 0.3s; }
+
+    @keyframes soundWave {
+      0% { height: 4px; opacity: 0.4; }
+      100% { height: 18px; opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-orb"></div>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">V</div>
+      <div>
+        <div class="brand-title">V.I.S.O.R.</div>
+        <div class="brand-subtitle">Visual Inspection & Smart Relief</div>
+      </div>
+    </div>
+
+    <div class="status-badge" id="system-status-badge">
+      <div class="status-pulse"></div>
+      <span id="status-text">LISTENING FOR TRIGGER</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="visual-ring-container">
+      <div class="visual-ring"></div>
+      <div class="visual-ring-inner"></div>
+      <div class="mic-icon-circle">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
+      </div>
+    </div>
+
+    <h1 class="hero-title">VISOR: Ready to Help</h1>
+
+    <div class="trigger-prompt-box">
+      <div class="sound-bars">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+      <span class="trigger-text">Say</span>
+      <span class="trigger-tag">"VISOR help"</span>
+      <span class="trigger-text">to begin visual first-aid assessment</span>
+    </div>
+
+    <p class="description-text">
+      Stand directly in front of the camera. V.I.S.O.R. will autonomously inspect your injury, dispense required medical supplies, and project step-by-step treatment guidance.
+    </p>
+  </main>
+
+  <footer>
+    <div class="supplies-title">Cartridge Dispensing Inventory</div>
+    <div class="supplies-grid">
+      <div class="supply-card">
+        <div class="supply-icon">🩹</div>
+        <div class="supply-info">
+          <span class="supply-name">Bandage (Normal)</span>
+          <span class="supply-meta">Slot 1 &bull; Ready</span>
+        </div>
+      </div>
+      <div class="supply-card">
+        <div class="supply-icon">🧴</div>
+        <div class="supply-info">
+          <span class="supply-name">Alcohol Prep Pad</span>
+          <span class="supply-meta">Slot 2 &bull; Ready</span>
+        </div>
+      </div>
+      <div class="supply-card">
+        <div class="supply-icon">📦</div>
+        <div class="supply-info">
+          <span class="supply-name">Gauze Pad</span>
+          <span class="supply-meta">Slot 3 &bull; Ready</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

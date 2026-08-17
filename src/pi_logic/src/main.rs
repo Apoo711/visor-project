@@ -1,17 +1,30 @@
 mod modules;
 
-use log::{debug, error, info};
+use log::{error, info, warn};
 use modules::{
-    arduino::ArduinoBridge, gemini::GeminiClient, input::capture_frame, youtube::YouTubeClient,
+    arduino::ArduinoBridge,
+    audio::WakeWordDetector,
+    gemini::GeminiClient,
+    input::capture_frame,
+    youtube::{DisplayManager, YouTubeClient},
 };
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    info!("Starting V.I.S.O.R. Core Process...");
+    info!("=========================================");
+    info!("   Starting V.I.S.O.R. Core System       ");
+    info!("   Visual Inspection & Smart Relief      ");
+    info!("=========================================");
 
-    let mut arduino = ArduinoBridge::new("/dev/ttyAMA0", 9600)?;
+    let arduino_port = std::env::var("ARDUINO_PORT").unwrap_or_else(|_| "/dev/ttyAMA0".to_string());
+    let arduino_baud: u32 = std::env::var("ARDUINO_BAUD")
+        .ok()
+        .and_then(|b| b.parse().ok())
+        .unwrap_or(9600);
+
+    let mut arduino = ArduinoBridge::new(&arduino_port, arduino_baud)?;
 
     let gemini_api_key = std::env::var("GEMINI_API_KEY").expect("GEMINI_API_KEY not set");
     let ai_client = GeminiClient::new(gemini_api_key);
@@ -19,64 +32,82 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let yt_api_key = std::env::var("YOUTUBE_API_KEY").expect("YOUTUBE_API_KEY not set");
     let yt_client = YouTubeClient::new(yt_api_key);
 
-    loop {
-        if let Ok(image_bytes) = capture_frame("/tmp/visor_frame.jpg") {
-            match ai_client.analyze_image(&image_bytes).await {
-                Ok(analysis) => {
-                    debug!("=== AI Assessment ===");
-                    debug!("Can Help: {}", analysis.can_help);
-                    debug!("Reasoning: {}", analysis.reasoning);
-                    debug!(
-                        "Dispense Signals -> Bandage: {}, Alcohol Pad: {}, Gauze Pad: {}",
-                        analysis.dispense.bandage,
-                        analysis.dispense.alcohol_pad,
-                        analysis.dispense.gauze_pad
-                    );
+    let standby_path = "assets/standby.html";
+    let display_manager = DisplayManager::new(standby_path).await?;
 
-                    if analysis.can_help {
-                        let cmd_str = format!(
-                            "{}{}{}\n",
+    let wake_detector = WakeWordDetector::new()?;
+
+    info!("V.I.S.O.R. is fully initialized and awaiting voice triggers.");
+
+    loop {
+        info!(">>> Awaiting wake word: 'VISOR help'...");
+        wake_detector.wait_for_wake_word().await;
+
+        info!(">>> Wake word detected! Initiating visual diagnosis...");
+
+        match capture_frame("/tmp/visor_frame.jpg") {
+            Ok(image_bytes) => {
+                info!("Sending snapshot to Gemini 3.7 Flash API...");
+                match ai_client.analyze_image(&image_bytes).await {
+                    Ok(analysis) => {
+                        info!("=== AI Assessment Received ===");
+                        info!("Can Help: {}", analysis.can_help);
+                        info!("Reasoning: {}", analysis.reasoning);
+                        info!(
+                            "Dispense Plan -> Bandage: {}, Alcohol Pad: {}, Gauze Pad: {}",
                             analysis.dispense.bandage,
                             analysis.dispense.alcohol_pad,
                             analysis.dispense.gauze_pad
                         );
-                        debug!(
-                            "Transmitting binary dispense command to Arduino: {}",
-                            cmd_str.trim()
-                        );
-                        if let Err(e) = arduino.send_bytes(cmd_str.as_bytes()) {
-                            error!("Serial communication error: {}", e);
-                        }
 
-                        if let Some(query) = &analysis.video_search_query {
-                            info!("Searching YouTube for instructional video: '{}'", query);
-                            match yt_client.fetch_top_video(query).await {
-                                Ok(Some((watch_url, title))) => {
-                                    debug!(
-                                        "Instructional Video Found: '{}' -> {}",
-                                        title, watch_url
-                                    );
-                                    if let Err(e) = yt_client.display_video(&watch_url).await {
-                                        error!("Failed to display video: {}", e);
-                                    }
-                                }
-                                Ok(None) => {
-                                    debug!("No instructional video found for query: '{}'", query)
-                                }
-                                Err(e) => debug!("YouTube API error: {}", e),
+                        if analysis.can_help {
+                            if let Err(e) = arduino.send_dispense(
+                                analysis.dispense.bandage,
+                                analysis.dispense.alcohol_pad,
+                                analysis.dispense.gauze_pad,
+                            ) {
+                                error!("Serial communication error to Arduino: {}", e);
                             }
+
+                            if let Some(query) = &analysis.video_search_query {
+                                info!("Searching YouTube for query: '{}'", query);
+                                match yt_client.fetch_top_video(query).await {
+                                    Ok(Some((video_id, watch_url, title))) => {
+                                        info!(
+                                            "Instructional Video Found: '{}' ({})",
+                                            title, watch_url
+                                        );
+                                        if let Err(e) = display_manager
+                                            .play_video_and_return_to_standby(&video_id)
+                                            .await
+                                        {
+                                            error!("Failed to display video in kiosk: {}", e);
+                                            let _ = display_manager.show_standby().await;
+                                        }
+                                    }
+                                    Ok(None) => {
+                                        warn!("No instructional video found for query: '{}'", query)
+                                    }
+                                    Err(e) => error!("YouTube API query error: {}", e),
+                                }
+                            }
+                        } else {
+                            warn!(
+                                "Condition cannot be treated with available supplies or requires emergency care."
+                            );
+                            let _ = arduino.send_hold();
                         }
-                    } else {
-                        debug!(
-                            "Condition cannot be treated with available supplies or requires emergency care."
-                        );
-                        let _ = arduino.send_bytes(b"000\n");
+                    }
+                    Err(e) => {
+                        error!("Gemini API analysis error: {}", e);
                     }
                 }
-                Err(e) => error!("API Analysis Error: {}", e),
+            }
+            Err(e) => {
+                error!("Camera snapshot failed: {}", e);
             }
         }
 
-        tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
+        tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
     }
 }

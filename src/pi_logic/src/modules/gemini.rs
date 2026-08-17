@@ -5,9 +5,9 @@ use serde_json::json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DispenseItems {
-    pub bandage: u8,
-    pub alcohol_pad: u8,
-    pub gauze_pad: u8,
+    pub bandage: bool,
+    pub alcohol_pad: bool,
+    pub gauze_pad: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,10 +41,11 @@ impl GeminiClient {
         let prompt_text = "Analyze this image to evaluate the user's first-aid needs. \
             Available resources for dispensing: Bandage (Normal Size), Alcohol Pad, Gauze Pad. \
             Determine if the user has a minor condition that can be treated using ONLY the available supplies. \
+            For each item in dispense, specify true to dispense or false to hold. \
             If the user requires immediate emergency care, severe medical attention, or if no first-aid help is needed, set can_help to false.";
 
         let body = json!({
-            "model": "gemini-3.6-flash",
+            "model": "gemini-3.7-flash",
             "input": [
                 {
                     "type": "text",
@@ -73,9 +74,9 @@ impl GeminiClient {
                         "dispense": {
                             "type": "object",
                             "properties": {
-                                "bandage": { "type": "integer", "description": "1 to dispense, 0 to hold." },
-                                "alcohol_pad": { "type": "integer", "description": "1 to dispense, 0 to hold." },
-                                "gauze_pad": { "type": "integer", "description": "1 to dispense, 0 to hold." }
+                                "bandage": { "type": "boolean", "description": "true to dispense, false to hold." },
+                                "alcohol_pad": { "type": "boolean", "description": "true to dispense, false to hold." },
+                                "gauze_pad": { "type": "boolean", "description": "true to dispense, false to hold." }
                             },
                             "required": ["bandage", "alcohol_pad", "gauze_pad"]
                         },
@@ -108,5 +109,35 @@ impl GeminiClient {
         let analysis: VisorAnalysis = serde_json::from_str(response_text)?;
 
         Ok(analysis)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_dispense_items_boolean_deserialization() {
+        let json_data = r#"{
+            "can_help": true,
+            "reasoning": "Minor superficial cut requiring cleaning and bandage.",
+            "dispense": {
+                "bandage": true,
+                "alcohol_pad": true,
+                "gauze_pad": false
+            },
+            "video_search_query": "how to apply bandage to finger cut"
+        }"#;
+
+        let analysis: VisorAnalysis =
+            serde_json::from_str(json_data).expect("Failed to deserialize");
+        assert!(analysis.can_help);
+        assert!(analysis.dispense.bandage);
+        assert!(analysis.dispense.alcohol_pad);
+        assert!(!analysis.dispense.gauze_pad);
+        assert_eq!(
+            analysis.video_search_query.as_deref(),
+            Some("how to apply bandage to finger cut")
+        );
     }
 }

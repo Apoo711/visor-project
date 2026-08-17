@@ -1,3 +1,3 @@
 # Placeholder
 
-This directory will house the Python scripts for Pi (Gemini API, serial comms, UI)
+This directory will house the Rust code for Pi (Gemini API, serial comms, UI)
