@@ -1,7 +1,5 @@
-mod modules;
-
 use log::{error, info, warn};
-use modules::{
+use rpi::modules::{
     arduino::ArduinoBridge,
     audio::WakeWordDetector,
     gemini::GeminiClient,

@@ -10,25 +10,58 @@ use reqwest::Client;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
-struct YouTubeSearchResponse {
-    items: Vec<YouTubeItem>,
+pub struct YouTubeSearchResponse {
+    pub items: Vec<YouTubeItem>,
 }
 
 #[derive(Debug, Deserialize)]
-struct YouTubeItem {
-    id: VideoId,
-    snippet: Snippet,
+pub struct YouTubeItem {
+    pub id: VideoId,
+    pub snippet: Snippet,
 }
 
 #[derive(Debug, Deserialize)]
-struct VideoId {
+pub struct VideoId {
     #[serde(rename = "videoId")]
-    video_id: Option<String>,
+    pub video_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
-struct Snippet {
-    title: String,
+pub struct Snippet {
+    pub title: String,
+}
+
+pub fn format_embed_url(video_id: &str) -> String {
+    format!(
+        "https://www.youtube-nocookie.com/embed/{}?autoplay=1&controls=1&enablejsapi=1&rel=0&fs=1",
+        video_id
+    )
+}
+
+pub fn parse_youtube_search_response(
+    response: YouTubeSearchResponse,
+) -> Option<(String, String, String)> {
+    if let Some(first_item) = response.items.into_iter().next() {
+        if let Some(video_id) = first_item.id.video_id {
+            let watch_url = format!("https://www.youtube.com/watch?v={}", video_id);
+            let title = first_item.snippet.title;
+            return Some((video_id, watch_url, title));
+        }
+    }
+    None
+}
+
+pub fn resolve_standby_url(standby_file_path: &str) -> String {
+    if Path::new(standby_file_path).exists() {
+        if let Ok(abs_path) = std::fs::canonicalize(standby_file_path) {
+            let path_str = abs_path.to_string_lossy().replace('\\', "/");
+            let clean_path = path_str
+                .trim_start_matches("//?/")
+                .trim_start_matches(r"\\?\");
+            return format!("file:///{}", clean_path.trim_start_matches('/'));
+        }
+    }
+    "data:text/html,<html><body style='background:%23080c14;color:%23fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;'><h1 style='font-size:3rem;'>VISOR: Ready to Help</h1></body></html>".to_string()
 }
 
 pub struct YouTubeClient {
@@ -66,15 +99,7 @@ impl YouTubeClient {
             .json()
             .await?;
 
-        if let Some(first_item) = res.items.first() {
-            if let Some(video_id) = &first_item.id.video_id {
-                let watch_url = format!("https://www.youtube.com/watch?v={}", video_id);
-                let title = first_item.snippet.title.clone();
-                return Ok(Some((video_id.clone(), watch_url, title)));
-            }
-        }
-
-        Ok(None)
+        Ok(parse_youtube_search_response(res))
     }
 }
 
@@ -86,20 +111,7 @@ pub struct DisplayManager {
 
 impl DisplayManager {
     pub async fn new(standby_file_path: &str) -> Result<Self, Box<dyn std::error::Error>> {
-        let standby_url = if Path::new(standby_file_path).exists() {
-            let abs_path = std::fs::canonicalize(standby_file_path)?;
-            let path_str = abs_path.to_string_lossy().replace('\\', "/");
-            let clean_path = path_str
-                .trim_start_matches("//?/")
-                .trim_start_matches(r"\\?\");
-            format!("file:///{}", clean_path.trim_start_matches('/'))
-        } else {
-            warn!(
-                "Standby file '{}' not found. Falling back to data URI.",
-                standby_file_path
-            );
-            "data:text/html,<html><body style='background:%23080c14;color:%23fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;'><h1 style='font-size:3rem;'>VISOR: Ready to Help</h1></body></html>".to_string()
-        };
+        let standby_url = resolve_standby_url(standby_file_path);
 
         info!(
             "Launching Chromium Kiosk Display pointing to: {}",
@@ -146,10 +158,7 @@ impl DisplayManager {
         &self,
         video_id: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let embed_url = format!(
-            "https://www.youtube-nocookie.com/embed/{}?autoplay=1&controls=1&enablejsapi=1&rel=0&fs=1",
-            video_id
-        );
+        let embed_url = format_embed_url(video_id);
 
         info!("Navigating kiosk display to video: {}", embed_url);
         self.page.goto(&embed_url).await?;
@@ -198,5 +207,73 @@ impl DisplayManager {
         self.show_standby().await?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_format_embed_url() {
+        let video_id = "dQw4w9WgXcQ";
+        let url = format_embed_url(video_id);
+        assert_eq!(
+            url,
+            "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&controls=1&enablejsapi=1&rel=0&fs=1"
+        );
+    }
+
+    #[test]
+    fn test_parse_youtube_search_response_valid() {
+        let json_data = r#"{
+            "items": [
+                {
+                    "id": { "videoId": "abc123XYZ" },
+                    "snippet": { "title": "How to Apply a Bandage" }
+                }
+            ]
+        }"#;
+
+        let res: YouTubeSearchResponse =
+            serde_json::from_str(json_data).expect("Failed to deserialize");
+        let parsed = parse_youtube_search_response(res);
+        assert!(parsed.is_some());
+        let (id, watch, title) = parsed.unwrap();
+        assert_eq!(id, "abc123XYZ");
+        assert_eq!(watch, "https://www.youtube.com/watch?v=abc123XYZ");
+        assert_eq!(title, "How to Apply a Bandage");
+    }
+
+    #[test]
+    fn test_parse_youtube_search_response_empty_items() {
+        let json_data = r#"{ "items": [] }"#;
+        let res: YouTubeSearchResponse =
+            serde_json::from_str(json_data).expect("Failed to deserialize");
+        let parsed = parse_youtube_search_response(res);
+        assert!(parsed.is_none());
+    }
+
+    #[test]
+    fn test_parse_youtube_search_response_missing_video_id() {
+        let json_data = r#"{
+            "items": [
+                {
+                    "id": { "videoId": null },
+                    "snippet": { "title": "Channel or Playlist" }
+                }
+            ]
+        }"#;
+        let res: YouTubeSearchResponse =
+            serde_json::from_str(json_data).expect("Failed to deserialize");
+        let parsed = parse_youtube_search_response(res);
+        assert!(parsed.is_none());
+    }
+
+    #[test]
+    fn test_resolve_standby_url_fallback() {
+        let url = resolve_standby_url("non_existent_file_path_123.html");
+        assert!(url.starts_with("data:text/html,"));
+        assert!(url.contains("VISOR: Ready to Help"));
     }
 }
