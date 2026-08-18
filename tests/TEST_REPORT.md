@@ -14,9 +14,9 @@
 > [!IMPORTANT]
 > **Executive Verification Summary:**
 > - **Overall Status:** **48 / 48 Tests Passed (100% Pass Rate)**
-> - **Execution Timestamp:** `2026-08-18 08:10:17 UTC`
-> - **Target Platform:** `Windows AMD64` (Target: Linux ARM64 Raspberry Pi 5 & ATmega328P Arduino Uno)
-> - **Git Reference:** [`main`](https://github.com/Apoo711/visor-project/tree/main) (`6080e16`)
+> - **Execution Timestamp:** `2026-08-18 08:13:08 UTC`
+> - **Target Platform:** `Linux x86_64` (Target: Linux ARM64 Raspberry Pi 5 & ATmega328P Arduino Uno)
+> - **Git Reference:** [`main`](https://github.com/Apoo711/visor-project/tree/main) (`5b7c426`)
 
 ---
 
@@ -102,8 +102,8 @@ Validates packet framing, baud rate communication, binary flag encoding, and res
 | 🟢 **PASS** | `test_format_dispense_command_all_combinations` | Format Dispense Command All Combinations |
 | 🟢 **PASS** | `test_format_ping_command` | Format Ping Command |
 | 🟢 **PASS** | `test_parse_serial_response_errors_and_edge_cases` | Parse Serial Response Errors And Edge Cases |
-| 🟢 **PASS** | `test_parse_serial_response_ready` | Parse Serial Response Ready |
 | 🟢 **PASS** | `test_parse_serial_response_ack` | Parse Serial Response Ack |
+| 🟢 **PASS** | `test_parse_serial_response_ready` | Parse Serial Response Ready |
 | 🟢 **PASS** | `test_parse_serial_response_status_messages` | Parse Serial Response Status Messages |
 
 
@@ -112,15 +112,15 @@ Validates structured JSON request payload generation, base64 image encapsulation
 
 | Status | Test Identifier | Scope / Verification Target |
 | :---: | :--- | :--- |
-| 🟢 **PASS** | `test_omitted_video_search_query` | Omitted Video Search Query |
-| 🟢 **PASS** | `test_cannot_help_emergency_deserialization` | Cannot Help Emergency Deserialization |
-| 🟢 **PASS** | `test_dispense_items_boolean_deserialization` | Dispense Items Boolean Deserialization |
 | 🟢 **PASS** | `test_build_request_body_structure` | Build Request Body Structure |
+| 🟢 **PASS** | `test_dispense_items_boolean_deserialization` | Dispense Items Boolean Deserialization |
 | 🟢 **PASS** | `test_extract_response_text_candidates_format` | Extract Response Text Candidates Format |
+| 🟢 **PASS** | `test_cannot_help_emergency_deserialization` | Cannot Help Emergency Deserialization |
 | 🟢 **PASS** | `test_extract_response_text_interactions_format` | Extract Response Text Interactions Format |
-| 🟢 **PASS** | `test_extract_response_text_invalid_format` | Extract Response Text Invalid Format |
 | 🟢 **PASS** | `test_malformed_json_failure` | Malformed Json Failure |
 | 🟢 **PASS** | `test_missing_dispense_field_failure` | Missing Dispense Field Failure |
+| 🟢 **PASS** | `test_extract_response_text_invalid_format` | Extract Response Text Invalid Format |
+| 🟢 **PASS** | `test_omitted_video_search_query` | Omitted Video Search Query |
 
 
 ### 2.3. 📺 Video Guidance & Kiosk Display (`modules/youtube.rs`)
@@ -128,8 +128,8 @@ Validates YouTube Data API v3 search response tokenization, video ID extraction,
 
 | Status | Test Identifier | Scope / Verification Target |
 | :---: | :--- | :--- |
-| 🟢 **PASS** | `test_format_embed_url` | Format Embed Url |
 | 🟢 **PASS** | `test_parse_youtube_search_response_empty_items` | Parse Youtube Search Response Empty Items |
+| 🟢 **PASS** | `test_format_embed_url` | Format Embed Url |
 | 🟢 **PASS** | `test_parse_youtube_search_response_missing_video_id` | Parse Youtube Search Response Missing Video Id |
 | 🟢 **PASS** | `test_parse_youtube_search_response_valid` | Parse Youtube Search Response Valid |
 | 🟢 **PASS** | `test_resolve_standby_url_fallback` | Resolve Standby Url Fallback |
@@ -140,11 +140,11 @@ Validates microphone PCM stream conversion, multi-channel downmixing, and 16-bit
 
 | Status | Test Identifier | Scope / Verification Target |
 | :---: | :--- | :--- |
-| 🟢 **PASS** | `test_convert_i16_to_f32_mono` | Convert I16 To F32 Mono |
 | 🟢 **PASS** | `test_convert_i16_to_f32_stereo` | Convert I16 To F32 Stereo |
 | 🟢 **PASS** | `test_downmix_f32_mono` | Downmix F32 Mono |
 | 🟢 **PASS** | `test_downmix_f32_quad_channel` | Downmix F32 Quad Channel |
 | 🟢 **PASS** | `test_downmix_f32_stereo` | Downmix F32 Stereo |
+| 🟢 **PASS** | `test_convert_i16_to_f32_mono` | Convert I16 To F32 Mono |
 
 
 ### 2.5. 📁 Vision & File I/O Subsystem (`modules/input.rs`)
@@ -164,8 +164,8 @@ Simulated full pipeline integration flows located in `src/pi_logic/tests/pipelin
 
 | Status | Test Identifier | Scope / Verification Target |
 | :---: | :--- | :--- |
-| 🟢 **PASS** | `test_end_to_end_emergency_hold_pipeline_flow` | End To End Emergency Hold Pipeline Flow |
 | 🟢 **PASS** | `test_end_to_end_all_items_dispense_pipeline_flow` | End To End All Items Dispense Pipeline Flow |
+| 🟢 **PASS** | `test_end_to_end_emergency_hold_pipeline_flow` | End To End Emergency Hold Pipeline Flow |
 | 🟢 **PASS** | `test_end_to_end_minor_injury_pipeline_flow` | End To End Minor Injury Pipeline Flow |
 
 
@@ -259,10 +259,10 @@ Firmware behavioral and serial framing tests executed via Python emulation in `t
 
 | Parameter | Value |
 | :--- | :--- |
-| **Operating System** | `Windows 11` |
-| **Host Architecture** | `AMD64` |
-| **Python Version** | `3.14.4` |
+| **Operating System** | `Linux 6.17.0-1022-azure` |
+| **Host Architecture** | `x86_64` |
+| **Python Version** | `3.12.13` |
 | **Rust Edition** | `2024 (cargo / rustc stable)` |
-| **Git Commit** | [`6080e16`](https://github.com/Apoo711/visor-project/commit/6080e16) |
+| **Git Commit** | [`5b7c426`](https://github.com/Apoo711/visor-project/commit/5b7c426) |
 | **Branch** | `main` |
-| **Timestamp** | `2026-08-18 08:10:17 UTC` |
+| **Timestamp** | `2026-08-18 08:13:08 UTC` |
