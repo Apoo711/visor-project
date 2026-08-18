@@ -130,6 +130,7 @@ Validates YouTube Data API v3 search response tokenization, video ID extraction,
 | :---: | :--- | :--- |
 | 🟢 **PASS** | `test_format_embed_url` | Format Embed Url |
 | 🟢 **PASS** | `test_parse_youtube_search_response_empty_items` | Parse Youtube Search Response Empty Items |
+| 🟢 **PASS** | `test_parse_youtube_search_response_empty_items` | Parse Youtube Search Response Empty Items |
 | 🟢 **PASS** | `test_parse_youtube_search_response_missing_video_id` | Parse Youtube Search Response Missing Video Id |
 | 🟢 **PASS** | `test_parse_youtube_search_response_valid` | Parse Youtube Search Response Valid |
 | 🟢 **PASS** | `test_resolve_standby_url_fallback` | Resolve Standby Url Fallback |
@@ -164,8 +165,8 @@ Simulated full pipeline integration flows located in `src/pi_logic/tests/pipelin
 
 | Status | Test Identifier | Scope / Verification Target |
 | :---: | :--- | :--- |
-| 🟢 **PASS** | `test_end_to_end_emergency_hold_pipeline_flow` | End To End Emergency Hold Pipeline Flow |
 | 🟢 **PASS** | `test_end_to_end_all_items_dispense_pipeline_flow` | End To End All Items Dispense Pipeline Flow |
+| 🟢 **PASS** | `test_end_to_end_emergency_hold_pipeline_flow` | End To End Emergency Hold Pipeline Flow |
 | 🟢 **PASS** | `test_end_to_end_minor_injury_pipeline_flow` | End To End Minor Injury Pipeline Flow |
 
 
@@ -259,10 +260,11 @@ Firmware behavioral and serial framing tests executed via Python emulation in `t
 
 | Parameter | Value |
 | :--- | :--- |
-| **Operating System** | `Windows 11` |
-| **Host Architecture** | `AMD64` |
-| **Python Version** | `3.14.4` |
+| **Operating System** | `Linux 6.17.0-1022-azure` |
+| **Host Architecture** | `x86_64` |
+| **Python Version** | `3.12.13` |
 | **Rust Edition** | `2024 (cargo / rustc stable)` |
+| **Git Commit** | [`5916247`](https://github.com/Apoo711/visor-project/commit/5916247) |
 | **Git Commit** | [`5916247`](https://github.com/Apoo711/visor-project/commit/5916247) |
 | **Branch** | `main` |
 | **Timestamp** | `2026-08-18 07:55:27 UTC` |
