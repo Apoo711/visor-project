@@ -18,6 +18,16 @@ pub struct VisorAnalysis {
     pub video_search_query: Option<String>,
 }
 
+/// Constructs the JSON payload for the Gemini 3.7 Flash API request.
+///
+/// Encodes the first-aid analysis prompt, base64-encoded image input, and a structured
+/// JSON schema specifying the required response format (`can_help`, `reasoning`, `dispense`, `video_search_query`).
+///
+/// # Arguments
+/// * `base64_string` - Base64 encoded JPEG image data.
+///
+/// # Returns
+/// * `serde_json::Value` - Complete JSON request payload formatted for the Gemini API.
 pub fn build_request_body(base64_string: &str) -> serde_json::Value {
     let prompt_text = "Analyze this image to evaluate the user's first-aid needs. \
         Available resources for dispensing: Bandage (Normal Size), Alcohol Pad, Gauze Pad. \
@@ -72,6 +82,15 @@ pub fn build_request_body(base64_string: &str) -> serde_json::Value {
     })
 }
 
+/// Extracts the raw JSON response text string from a Gemini API response envelope.
+///
+/// Supports both interactions API format (`output[0].text`) and candidates format (`candidates[0].content.parts[0].text`).
+///
+/// # Arguments
+/// * `res` - Parsed JSON response from the API call.
+///
+/// # Returns
+/// * `Result<&str, String>` - Extracted inner text slice, or an error description if format is unexpected.
 pub fn extract_response_text(res: &serde_json::Value) -> Result<&str, String> {
     res["output"][0]["text"]
         .as_str()
@@ -79,12 +98,20 @@ pub fn extract_response_text(res: &serde_json::Value) -> Result<&str, String> {
         .ok_or_else(|| format!("Unexpected API response format: {}", res))
 }
 
+/// Client for communicating with the Google Gemini Multimodal API.
 pub struct GeminiClient {
     client: Client,
     api_key: String,
 }
 
 impl GeminiClient {
+    /// Creates a new `GeminiClient` instance with the specified API key.
+    ///
+    /// # Arguments
+    /// * `api_key` - Google AI Studio / Gemini API key.
+    ///
+    /// # Returns
+    /// * `Self` - Initialized `GeminiClient`.
     pub fn new(api_key: String) -> Self {
         Self {
             client: Client::new(),
@@ -92,6 +119,16 @@ impl GeminiClient {
         }
     }
 
+    /// Sends raw image bytes to the Gemini 3.7 Flash API for medical diagnosis and supply dispensing recommendations.
+    ///
+    /// Encodes the snapshot to base64, submits the structured prompt, and deserializes
+    /// the model's structured JSON output into a `VisorAnalysis` instance.
+    ///
+    /// # Arguments
+    /// * `image_bytes` - Byte slice containing the JPEG image frame.
+    ///
+    /// # Returns
+    /// * `Result<VisorAnalysis, Box<dyn std::error::Error>>` - Structured assessment on success, or an error on failure.
     pub async fn analyze_image(
         &self,
         image_bytes: &[u8],
