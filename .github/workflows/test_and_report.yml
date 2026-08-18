@@ -28,6 +28,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
 
       - name: Install Linux System Dependencies
@@ -56,11 +57,13 @@ jobs:
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
+          branch: ${{ github.head_ref || github.ref_name }}
           commit_message: "chore(ci): update automated test report [skip ci]"
           file_pattern: "tests/TEST_REPORT.md"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
           commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+
 
       - name: Setup Pages
         if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
