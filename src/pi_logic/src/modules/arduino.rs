@@ -76,6 +76,16 @@ pub fn parse_serial_response(raw: &str) -> ArduinoResponse {
     ArduinoResponse::Unknown(clean.to_string())
 }
 
+/// Formats a framed dispense command for the Arduino dispenser controller.
+///
+/// Converts boolean item flags into binary ASCII payload strings (`<DISP:b,a>\n`).
+///
+/// # Arguments
+/// * `bandage` - Whether to dispense a bandage.
+/// * `alcohol_pad` - Whether to dispense an alcohol pad.
+///
+/// # Returns
+/// * `String` - Formatted command string (e.g., `"<DISP:1,0>\n"`).
 pub fn format_dispense_command(bandage: bool, alcohol_pad: bool/*, gauze_pad: bool*/) -> String {
     let b = if bandage { 1 } else { 0 };
     let a = if alcohol_pad { 1 } else { 0 };
@@ -122,7 +132,6 @@ impl ArduinoBridge {
     /// # Arguments
     /// * `bandage` - True to actuate the bandage dispenser servo.
     /// * `alcohol_pad` - True to actuate the alcohol pad dispenser servo.
-    /// * `gauze_pad` - True to actuate the gauze pad dispenser servo.
     ///
     /// # Returns
     /// * `Result<(), std::io::Error>` - Ok if bytes were successfully written and flushed.

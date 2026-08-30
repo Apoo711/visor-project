@@ -108,8 +108,8 @@ void loop() {
  * @brief Parses and executes received protocol commands.
  *
  * Supported commands:
- *  - <DISP:b,a,g>: Parses binary flags for bandage, alcohol pad, and gauze.
- *                  Sends ACK:DISP:b,a,g and initiates servo actuation or holds.
+ *  - <DISP:b,a>: Parses binary flags for bandage and alcohol pad (gauze pad disabled).
+ *                Sends ACK:DISP:b,a and initiates servo actuation or holds.
  *  - <PING>: Responds with PONG for heartbeat/liveness testing.
  *  - Unknown commands emit ERR:UNKNOWN_COMMAND:<cmd>.
  *
@@ -150,9 +150,9 @@ void processCommand(const char* cmd) {
  *
  * @param doBandage Whether to actuate the bandage dispenser servo.
  * @param doAlcohol Whether to actuate the alcohol pad dispenser servo.
- * @param doGauze   Whether to actuate the gauze pad dispenser servo.
+ * // @param doGauze   Whether to actuate the gauze pad dispenser servo. [DISABLED: 2-item dispensing only]
  */
-void dispenseSupplies(bool doBandage, bool doAlcohol, bool doGauze) {
+void dispenseSupplies(bool doBandage, bool doAlcohol/*, bool doGauze*/) {
   digitalWrite(PIN_LED_STATUS, HIGH);
 
   if (doBandage) {

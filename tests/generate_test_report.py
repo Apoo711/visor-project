@@ -195,8 +195,8 @@ flowchart TD
     end
 
     subgraph HardwareBridge ["&nbsp;⚡ Arduino UART Dispenser Controller&nbsp;"]
-        D1["<b>Protocol Serialization</b><br/><small>&lt;DISP:b,a,g&gt; UART Frame</small>"]:::hardware
-        D2["<b>Servo Actuation</b><br/><small>Bandage / Alcohol / Gauze</small>"]:::hardware
+        D1["<b>Protocol Serialization</b><br/><small>&lt;DISP:b,a&gt; UART Frame</small>"]:::hardware
+        D2["<b>Servo Actuation</b><br/><small>Bandage / Alcohol Pad</small>"]:::hardware
         D3["<b>Status Telemetry</b><br/><small>Safety Lock &amp; ACK State</small>"]:::hardware
         D1 --> D2 --> D3
     end
@@ -263,13 +263,13 @@ Simulated full pipeline integration flows located in `src/pi_logic/tests/pipelin
 <summary><b>🔍 Pipeline Flow Descriptions (Click to Expand)</b></summary>
 
 1. **Minor Injury Pipeline Flow (`test_end_to_end_minor_injury_pipeline_flow`)**:
-   - Audio trigger preprocessing → Camera snapshot directory creation → Base64 request body generation → AI triage response parsing (`can_help: true`) → Serial packet generation (`<DISP:1,1,0>\\n`) → Simulated Arduino ACK & dispensing sequence → YouTube instructional video query resolution → Standby return.
+   - Audio trigger preprocessing → Camera snapshot directory creation → Base64 request body generation → AI triage response parsing (`can_help: true`) → Serial packet generation (`<DISP:1,1>\\n`) → Simulated Arduino ACK & dispensing sequence → YouTube instructional video query resolution → Standby return.
 
 2. **Emergency Hold Pipeline Flow (`test_end_to_end_emergency_hold_pipeline_flow`)**:
-   - Audio trigger → Image capture → AI triage response parsing (`can_help: false`) → Safety lock command generation (`<DISP:0,0,0>\\n`) → Arduino hold confirmation → Kiosk display standby safety latch.
+   - Audio trigger → Image capture → AI triage response parsing (`can_help: false`) → Safety lock command generation (`<DISP:0,0>\\n`) → Arduino hold confirmation → Kiosk display standby safety latch.
 
 3. **All Items Dispense Pipeline Flow (`test_end_to_end_all_items_dispense_pipeline_flow`)**:
-   - AI recommendation requesting Bandage, Alcohol Pad, and Gauze Pad simultaneously → Serial packet `<DISP:1,1,1>\\n` → Arduino sequential servo dispensing cycles.
+   - AI recommendation requesting Bandage and Alcohol Pad simultaneously → Serial packet `<DISP:1,1>\\n` → Arduino sequential servo dispensing cycles.
 
 </details>
 
@@ -1111,7 +1111,7 @@ flowchart TD
     end
 
     subgraph HardwareBridge ["&nbsp;⚡ Arduino UART Dispenser Controller&nbsp;"]
-        D1["<b>&lt;DISP:b,a,g&gt;</b><br/><small>UART Framing</small>"]:::hardware
+        D1["<b>&lt;DISP:b,a&gt;</b><br/><small>UART Framing</small>"]:::hardware
         D2["<b>Servo Actuation</b><br/><small>Dispenser Cycle</small>"]:::hardware
         D3["<b>Status Telemetry</b><br/><small>Safety Lock</small>"]:::hardware
         D1 --> D2 --> D3

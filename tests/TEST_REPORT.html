@@ -533,8 +533,8 @@
                     <p>Voice-Interactive Smart Operational Responder • Continuous Integration &amp; Hardware Verification</p>
                     <div class="meta-badges">
                         <span class="meta-tag">Branch: <b>main</b></span>
-                        <span class="meta-tag">Commit: <b>6080e16</b></span>
-                        <span class="meta-tag">Timestamp: <b>2026-08-18 08:10:17 UTC</b></span>
+                        <span class="meta-tag">Commit: <b>a142820</b></span>
+                        <span class="meta-tag">Timestamp: <b>2026-08-30 23:37:20 UTC</b></span>
                         <span class="meta-tag">Platform: <b>Windows AMD64</b></span>
                     </div>
                 </div>
@@ -546,7 +546,7 @@
             <div class="kpi-card" style="--accent: var(--emerald);">
                 <div class="kpi-label">Test Suite Pass Rate</div>
                 <div class="kpi-value" style="color: var(--emerald);">100.0%</div>
-                <div class="kpi-subtext">🟢 48 of 48 tests verified</div>
+                <div class="kpi-subtext">🟢 44 of 44 tests verified</div>
             </div>
 
             <div class="kpi-card" style="--accent: var(--cyan);">
@@ -557,7 +557,7 @@
 
             <div class="kpi-card" style="--accent: var(--purple);">
                 <div class="kpi-label">Firmware Protocol Safety</div>
-                <div class="kpi-value">14 / 14</div>
+                <div class="kpi-value">10 / 10</div>
                 <div class="kpi-subtext">🔒 CRC, Bounds &amp; Overflow Verified</div>
             </div>
 
@@ -578,9 +578,9 @@
                 <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-muted);">Suite Composition</h3>
                 <div class="mermaid">
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#0284c7', 'lineColor': '#64748b', 'pie1': '#38bdf8', 'pie2': '#fbbf24', 'pie3': '#10b981', 'pie4': '#c084fc' } } }%%
-pie title Coverage (48 Tests)
+pie title Coverage (44 Tests)
     "Pi Logic" : 27
-    "Arduino UART" : 14
+    "Arduino UART" : 10
     "Benchmarks" : 4
     "Pipelines" : 3
                 </div>
@@ -618,7 +618,7 @@ flowchart TD
     end
 
     subgraph HardwareBridge ["&nbsp;⚡ Arduino UART Dispenser Controller&nbsp;"]
-        D1["<b>&lt;DISP:b,a,g&gt;</b><br/><small>UART Framing</small>"]:::hardware
+        D1["<b>&lt;DISP:b,a&gt;</b><br/><small>UART Framing</small>"]:::hardware
         D2["<b>Servo Actuation</b><br/><small>Dispenser Cycle</small>"]:::hardware
         D3["<b>Status Telemetry</b><br/><small>Safety Lock</small>"]:::hardware
         D1 --> D2 --> D3
@@ -723,13 +723,13 @@ flowchart LR
 
         <!-- Section 3: Interactive Test Matrix -->
         <div class="section-header">
-            <div class="section-title">📋 3. Interactive Test Verification Matrix (48 Tests)</div>
+            <div class="section-title">📋 3. Interactive Test Verification Matrix (44 Tests)</div>
         </div>
 
         <div class="card">
             <div class="filter-bar">
                 <input type="text" id="testSearch" class="search-input" placeholder="🔍 Search test identifiers, modules, or scopes...">
-                <button class="filter-btn active" data-filter="all">All (48)</button>
+                <button class="filter-btn active" data-filter="all">All (44)</button>
                 <button class="filter-btn" data-filter="arduino">⚡ Arduino</button>
                 <button class="filter-btn" data-filter="gemini">🧠 Gemini AI</button>
                 <button class="filter-btn" data-filter="audio">🎙️ Audio</button>
@@ -757,20 +757,6 @@ flowchart LR
             <td class="desc-col">Format Dispense Command All Combinations</td>
         </tr>
         
-        <tr class="test-row" data-category="arduino serial bridge" data-name="test_format_ping_command format ping command">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">⚡ Arduino Serial Bridge</span></td>
-            <td class="id-col"><code>test_format_ping_command</code></td>
-            <td class="desc-col">Format Ping Command</td>
-        </tr>
-        
-        <tr class="test-row" data-category="arduino serial bridge" data-name="test_parse_serial_response_errors_and_edge_cases parse serial response errors and edge cases">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">⚡ Arduino Serial Bridge</span></td>
-            <td class="id-col"><code>test_parse_serial_response_errors_and_edge_cases</code></td>
-            <td class="desc-col">Parse Serial Response Errors And Edge Cases</td>
-        </tr>
-        
         <tr class="test-row" data-category="arduino serial bridge" data-name="test_parse_serial_response_ready parse serial response ready">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">⚡ Arduino Serial Bridge</span></td>
@@ -778,11 +764,11 @@ flowchart LR
             <td class="desc-col">Parse Serial Response Ready</td>
         </tr>
         
-        <tr class="test-row" data-category="arduino serial bridge" data-name="test_parse_serial_response_ack parse serial response ack">
+        <tr class="test-row" data-category="arduino serial bridge" data-name="test_format_ping_command format ping command">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">⚡ Arduino Serial Bridge</span></td>
-            <td class="id-col"><code>test_parse_serial_response_ack</code></td>
-            <td class="desc-col">Parse Serial Response Ack</td>
+            <td class="id-col"><code>test_format_ping_command</code></td>
+            <td class="desc-col">Format Ping Command</td>
         </tr>
         
         <tr class="test-row" data-category="arduino serial bridge" data-name="test_parse_serial_response_status_messages parse serial response status messages">
@@ -792,11 +778,32 @@ flowchart LR
             <td class="desc-col">Parse Serial Response Status Messages</td>
         </tr>
         
-        <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_omitted_video_search_query omitted video search query">
+        <tr class="test-row" data-category="arduino serial bridge" data-name="test_parse_serial_response_errors_and_edge_cases parse serial response errors and edge cases">
+            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
+            <td class="category-col"><span class="cat-pill">⚡ Arduino Serial Bridge</span></td>
+            <td class="id-col"><code>test_parse_serial_response_errors_and_edge_cases</code></td>
+            <td class="desc-col">Parse Serial Response Errors And Edge Cases</td>
+        </tr>
+        
+        <tr class="test-row" data-category="arduino serial bridge" data-name="test_parse_serial_response_ack parse serial response ack">
+            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
+            <td class="category-col"><span class="cat-pill">⚡ Arduino Serial Bridge</span></td>
+            <td class="id-col"><code>test_parse_serial_response_ack</code></td>
+            <td class="desc-col">Parse Serial Response Ack</td>
+        </tr>
+        
+        <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_build_request_body_structure build request body structure">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">🧠 Gemini 3.7 AI Assessment</span></td>
-            <td class="id-col"><code>test_omitted_video_search_query</code></td>
-            <td class="desc-col">Omitted Video Search Query</td>
+            <td class="id-col"><code>test_build_request_body_structure</code></td>
+            <td class="desc-col">Build Request Body Structure</td>
+        </tr>
+        
+        <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_extract_response_text_interactions_format extract response text interactions format">
+            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
+            <td class="category-col"><span class="cat-pill">🧠 Gemini 3.7 AI Assessment</span></td>
+            <td class="id-col"><code>test_extract_response_text_interactions_format</code></td>
+            <td class="desc-col">Extract Response Text Interactions Format</td>
         </tr>
         
         <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_cannot_help_emergency_deserialization cannot help emergency deserialization">
@@ -813,25 +820,11 @@ flowchart LR
             <td class="desc-col">Dispense Items Boolean Deserialization</td>
         </tr>
         
-        <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_build_request_body_structure build request body structure">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">🧠 Gemini 3.7 AI Assessment</span></td>
-            <td class="id-col"><code>test_build_request_body_structure</code></td>
-            <td class="desc-col">Build Request Body Structure</td>
-        </tr>
-        
         <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_extract_response_text_candidates_format extract response text candidates format">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">🧠 Gemini 3.7 AI Assessment</span></td>
             <td class="id-col"><code>test_extract_response_text_candidates_format</code></td>
             <td class="desc-col">Extract Response Text Candidates Format</td>
-        </tr>
-        
-        <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_extract_response_text_interactions_format extract response text interactions format">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">🧠 Gemini 3.7 AI Assessment</span></td>
-            <td class="id-col"><code>test_extract_response_text_interactions_format</code></td>
-            <td class="desc-col">Extract Response Text Interactions Format</td>
         </tr>
         
         <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_extract_response_text_invalid_format extract response text invalid format">
@@ -853,6 +846,13 @@ flowchart LR
             <td class="category-col"><span class="cat-pill">🧠 Gemini 3.7 AI Assessment</span></td>
             <td class="id-col"><code>test_missing_dispense_field_failure</code></td>
             <td class="desc-col">Missing Dispense Field Failure</td>
+        </tr>
+        
+        <tr class="test-row" data-category="gemini 3.7 ai assessment" data-name="test_omitted_video_search_query omitted video search query">
+            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
+            <td class="category-col"><span class="cat-pill">🧠 Gemini 3.7 AI Assessment</span></td>
+            <td class="id-col"><code>test_omitted_video_search_query</code></td>
+            <td class="desc-col">Omitted Video Search Query</td>
         </tr>
         
         <tr class="test-row" data-category="video guidance & kiosk" data-name="test_format_embed_url format embed url">
@@ -890,20 +890,6 @@ flowchart LR
             <td class="desc-col">Resolve Standby Url Fallback</td>
         </tr>
         
-        <tr class="test-row" data-category="audio signal ingestion" data-name="test_convert_i16_to_f32_mono convert i16 to f32 mono">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">🎙️ Audio Signal Ingestion</span></td>
-            <td class="id-col"><code>test_convert_i16_to_f32_mono</code></td>
-            <td class="desc-col">Convert I16 To F32 Mono</td>
-        </tr>
-        
-        <tr class="test-row" data-category="audio signal ingestion" data-name="test_convert_i16_to_f32_stereo convert i16 to f32 stereo">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">🎙️ Audio Signal Ingestion</span></td>
-            <td class="id-col"><code>test_convert_i16_to_f32_stereo</code></td>
-            <td class="desc-col">Convert I16 To F32 Stereo</td>
-        </tr>
-        
         <tr class="test-row" data-category="audio signal ingestion" data-name="test_downmix_f32_mono downmix f32 mono">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">🎙️ Audio Signal Ingestion</span></td>
@@ -916,6 +902,20 @@ flowchart LR
             <td class="category-col"><span class="cat-pill">🎙️ Audio Signal Ingestion</span></td>
             <td class="id-col"><code>test_downmix_f32_quad_channel</code></td>
             <td class="desc-col">Downmix F32 Quad Channel</td>
+        </tr>
+        
+        <tr class="test-row" data-category="audio signal ingestion" data-name="test_convert_i16_to_f32_mono convert i16 to f32 mono">
+            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
+            <td class="category-col"><span class="cat-pill">🎙️ Audio Signal Ingestion</span></td>
+            <td class="id-col"><code>test_convert_i16_to_f32_mono</code></td>
+            <td class="desc-col">Convert I16 To F32 Mono</td>
+        </tr>
+        
+        <tr class="test-row" data-category="audio signal ingestion" data-name="test_convert_i16_to_f32_stereo convert i16 to f32 stereo">
+            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
+            <td class="category-col"><span class="cat-pill">🎙️ Audio Signal Ingestion</span></td>
+            <td class="id-col"><code>test_convert_i16_to_f32_stereo</code></td>
+            <td class="desc-col">Convert I16 To F32 Stereo</td>
         </tr>
         
         <tr class="test-row" data-category="audio signal ingestion" data-name="test_downmix_f32_stereo downmix f32 stereo">
@@ -967,18 +967,18 @@ flowchart LR
             <td class="desc-col">Audio Normalization And Downmix Latency</td>
         </tr>
         
-        <tr class="test-row" data-category="latency benchmarks" data-name="test_request_payload_building_latency request payload building latency">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">⚡ Latency Benchmarks</span></td>
-            <td class="id-col"><code>test_request_payload_building_latency</code></td>
-            <td class="desc-col">Request Payload Building Latency</td>
-        </tr>
-        
         <tr class="test-row" data-category="latency benchmarks" data-name="test_serial_packet_formatting_and_parsing_latency serial packet formatting and parsing latency">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">⚡ Latency Benchmarks</span></td>
             <td class="id-col"><code>test_serial_packet_formatting_and_parsing_latency</code></td>
             <td class="desc-col">Serial Packet Formatting And Parsing Latency</td>
+        </tr>
+        
+        <tr class="test-row" data-category="latency benchmarks" data-name="test_request_payload_building_latency request payload building latency">
+            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
+            <td class="category-col"><span class="cat-pill">⚡ Latency Benchmarks</span></td>
+            <td class="id-col"><code>test_request_payload_building_latency</code></td>
+            <td class="desc-col">Request Payload Building Latency</td>
         </tr>
         
         <tr class="test-row" data-category="latency benchmarks" data-name="test_json_deserialization_latency json deserialization latency">
@@ -995,60 +995,32 @@ flowchart LR
             <td class="desc-col">Ping-Pong Keepalive</td>
         </tr>
         
-        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (0,0,0) dispense combination (0,0,0)">
+        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (0,0) dispense combination (0,0)">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">🤖 Arduino Firmware Suite</span></td>
-            <td class="id-col"><code>Dispense Combination (0,0,0)</code></td>
-            <td class="desc-col">Dispense Combination (0,0,0)</td>
+            <td class="id-col"><code>Dispense Combination (0,0)</code></td>
+            <td class="desc-col">Dispense Combination (0,0)</td>
         </tr>
         
-        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (1,0,0) dispense combination (1,0,0)">
+        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (1,0) dispense combination (1,0)">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">🤖 Arduino Firmware Suite</span></td>
-            <td class="id-col"><code>Dispense Combination (1,0,0)</code></td>
-            <td class="desc-col">Dispense Combination (1,0,0)</td>
+            <td class="id-col"><code>Dispense Combination (1,0)</code></td>
+            <td class="desc-col">Dispense Combination (1,0)</td>
         </tr>
         
-        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (0,1,0) dispense combination (0,1,0)">
+        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (0,1) dispense combination (0,1)">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">🤖 Arduino Firmware Suite</span></td>
-            <td class="id-col"><code>Dispense Combination (0,1,0)</code></td>
-            <td class="desc-col">Dispense Combination (0,1,0)</td>
+            <td class="id-col"><code>Dispense Combination (0,1)</code></td>
+            <td class="desc-col">Dispense Combination (0,1)</td>
         </tr>
         
-        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (0,0,1) dispense combination (0,0,1)">
+        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (1,1) dispense combination (1,1)">
             <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
             <td class="category-col"><span class="cat-pill">🤖 Arduino Firmware Suite</span></td>
-            <td class="id-col"><code>Dispense Combination (0,0,1)</code></td>
-            <td class="desc-col">Dispense Combination (0,0,1)</td>
-        </tr>
-        
-        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (1,1,0) dispense combination (1,1,0)">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">🤖 Arduino Firmware Suite</span></td>
-            <td class="id-col"><code>Dispense Combination (1,1,0)</code></td>
-            <td class="desc-col">Dispense Combination (1,1,0)</td>
-        </tr>
-        
-        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (1,0,1) dispense combination (1,0,1)">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">🤖 Arduino Firmware Suite</span></td>
-            <td class="id-col"><code>Dispense Combination (1,0,1)</code></td>
-            <td class="desc-col">Dispense Combination (1,0,1)</td>
-        </tr>
-        
-        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (0,1,1) dispense combination (0,1,1)">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">🤖 Arduino Firmware Suite</span></td>
-            <td class="id-col"><code>Dispense Combination (0,1,1)</code></td>
-            <td class="desc-col">Dispense Combination (0,1,1)</td>
-        </tr>
-        
-        <tr class="test-row" data-category="arduino firmware suite" data-name="dispense combination (1,1,1) dispense combination (1,1,1)">
-            <td class="status-col"><span class="badge badge-pass"><span class="dot"></span> PASS</span></td>
-            <td class="category-col"><span class="cat-pill">🤖 Arduino Firmware Suite</span></td>
-            <td class="id-col"><code>Dispense Combination (1,1,1)</code></td>
-            <td class="desc-col">Dispense Combination (1,1,1)</td>
+            <td class="id-col"><code>Dispense Combination (1,1)</code></td>
+            <td class="desc-col">Dispense Combination (1,1)</td>
         </tr>
         
         <tr class="test-row" data-category="arduino firmware suite" data-name="serial garbage prefix filtering serial garbage prefix filtering">
@@ -1116,11 +1088,11 @@ flowchart LR
                 </div>
                 <div class="telemetry-item">
                     <div class="telemetry-label">Python Suite</div>
-                    <div class="telemetry-val">3.14.4</div>
+                    <div class="telemetry-val">3.13.3</div>
                 </div>
                 <div class="telemetry-item">
                     <div class="telemetry-label">Git Reference</div>
-                    <div class="telemetry-val">main (6080e16)</div>
+                    <div class="telemetry-val">main (a142820)</div>
                 </div>
             </div>
         </div>
