@@ -34,13 +34,13 @@ fn test_audio_normalization_and_downmix_latency() {
 
 #[test]
 fn test_json_deserialization_latency() {
+    // Note: 3rd item gauze_pad disabled for 2-item dispensing
     let raw_json = r#"{
         "can_help": true,
         "reasoning": "Minor abrasions and surface dirt present. Clean with alcohol pad and apply bandage.",
         "dispense": {
             "bandage": true,
-            "alcohol_pad": true,
-            "gauze_pad": false
+            "alcohol_pad": true
         },
         "video_search_query": "how to clean scrape and bandage"
     }"#;
@@ -71,10 +71,10 @@ fn test_serial_packet_formatting_and_parsing_latency() {
     for i in 0..iterations {
         let b = (i % 2) == 0;
         let a = (i % 3) == 0;
-        let g = (i % 5) == 0;
+        // let g = (i % 5) == 0;
 
-        let cmd = format_dispense_command(b, a, g);
-        let _resp = parse_serial_response("ACK:DISP:1,0,1");
+        let cmd = format_dispense_command(b, a/*, g*/);
+        let _resp = parse_serial_response("ACK:DISP:1,0");
         let _ = cmd.len();
     }
     let total_duration = start.elapsed();

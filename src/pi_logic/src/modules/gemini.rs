@@ -7,7 +7,7 @@ use serde_json::json;
 pub struct DispenseItems {
     pub bandage: bool,
     pub alcohol_pad: bool,
-    pub gauze_pad: bool,
+    // pub gauze_pad: bool, // [DISABLED: 2-item dispensing only]
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -20,7 +20,7 @@ pub struct VisorAnalysis {
 
 pub fn build_request_body(base64_string: &str) -> serde_json::Value {
     let prompt_text = "Analyze this image to evaluate the user's first-aid needs. \
-        Available resources for dispensing: Bandage (Normal Size), Alcohol Pad, Gauze Pad. \
+        Available resources for dispensing: Bandage (Normal Size), Alcohol Pad. \
         Determine if the user has a minor condition that can be treated using ONLY the available supplies. \
         For each item in dispense, specify true to dispense or false to hold. \
         If the user requires immediate emergency care, severe medical attention, or if no first-aid help is needed, set can_help to false.";
@@ -56,10 +56,10 @@ pub fn build_request_body(base64_string: &str) -> serde_json::Value {
                         "type": "object",
                         "properties": {
                             "bandage": { "type": "boolean", "description": "true to dispense, false to hold." },
-                            "alcohol_pad": { "type": "boolean", "description": "true to dispense, false to hold." },
-                            "gauze_pad": { "type": "boolean", "description": "true to dispense, false to hold." }
+                            "alcohol_pad": { "type": "boolean", "description": "true to dispense, false to hold." }
+                            // "gauze_pad": { "type": "boolean", "description": "true to dispense, false to hold." }
                         },
-                        "required": ["bandage", "alcohol_pad", "gauze_pad"]
+                        "required": ["bandage", "alcohol_pad"]
                     },
                     "video_search_query": {
                         "type": "string",
@@ -126,13 +126,13 @@ mod tests {
 
     #[test]
     fn test_dispense_items_boolean_deserialization() {
+        // Note: 3rd item (gauze_pad) disabled for 2-item dispensing
         let json_data = r#"{
             "can_help": true,
             "reasoning": "Minor superficial cut requiring cleaning and bandage.",
             "dispense": {
                 "bandage": true,
-                "alcohol_pad": true,
-                "gauze_pad": false
+                "alcohol_pad": true
             },
             "video_search_query": "how to apply bandage to finger cut"
         }"#;
@@ -146,7 +146,7 @@ mod tests {
         );
         assert!(analysis.dispense.bandage);
         assert!(analysis.dispense.alcohol_pad);
-        assert!(!analysis.dispense.gauze_pad);
+        // assert!(!analysis.dispense.gauze_pad); // [DISABLED: 3rd item]
         assert_eq!(
             analysis.video_search_query.as_deref(),
             Some("how to apply bandage to finger cut")
@@ -155,13 +155,13 @@ mod tests {
 
     #[test]
     fn test_cannot_help_emergency_deserialization() {
+        // Note: 3rd item (gauze_pad) disabled for 2-item dispensing
         let json_data = r#"{
             "can_help": false,
             "reasoning": "Severe compound fracture detected. Seek emergency care immediately.",
             "dispense": {
                 "bandage": false,
-                "alcohol_pad": false,
-                "gauze_pad": false
+                "alcohol_pad": false
             },
             "video_search_query": null
         }"#;
@@ -175,26 +175,26 @@ mod tests {
         );
         assert!(!analysis.dispense.bandage);
         assert!(!analysis.dispense.alcohol_pad);
-        assert!(!analysis.dispense.gauze_pad);
+        // assert!(!analysis.dispense.gauze_pad); // [DISABLED: 3rd item]
         assert!(analysis.video_search_query.is_none());
     }
 
     #[test]
     fn test_omitted_video_search_query() {
+        // Note: 3rd item (gauze_pad) disabled for 2-item dispensing
         let json_data = r#"{
             "can_help": true,
-            "reasoning": "Minor abrasion, gauze and alcohol pad suggested.",
+            "reasoning": "Minor abrasion, alcohol pad suggested.",
             "dispense": {
                 "bandage": false,
-                "alcohol_pad": true,
-                "gauze_pad": true
+                "alcohol_pad": true
             }
         }"#;
 
         let analysis: VisorAnalysis =
             serde_json::from_str(json_data).expect("Failed to deserialize");
         assert!(analysis.can_help);
-        assert!(analysis.dispense.gauze_pad);
+        // assert!(analysis.dispense.gauze_pad); // [DISABLED: 3rd item]
         assert!(analysis.dispense.alcohol_pad);
         assert!(!analysis.dispense.bandage);
         assert!(analysis.video_search_query.is_none());
@@ -236,7 +236,7 @@ mod tests {
         let payload = json!({
             "output": [
                 {
-                    "text": "{\"can_help\": true, \"reasoning\": \"ok\", \"dispense\": {\"bandage\": true, \"alcohol_pad\": false, \"gauze_pad\": false}}"
+                    "text": "{\"can_help\": true, \"reasoning\": \"ok\", \"dispense\": {\"bandage\": true, \"alcohol_pad\": false}}"
                 }
             ]
         });
@@ -252,7 +252,7 @@ mod tests {
                     "content": {
                         "parts": [
                             {
-                                "text": "{\"can_help\": false, \"reasoning\": \"no\", \"dispense\": {\"bandage\": false, \"alcohol_pad\": false, \"gauze_pad\": false}}"
+                                "text": "{\"can_help\": false, \"reasoning\": \"no\", \"dispense\": {\"bandage\": false, \"alcohol_pad\": false}}"
                             }
                         ]
                     }

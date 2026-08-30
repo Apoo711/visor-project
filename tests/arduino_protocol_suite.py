@@ -25,7 +25,7 @@ class ArduinoFirmwareSimulator:
     BUFFER_SIZE = 64
     PIN_BANDAGE = 9
     PIN_ALCOHOL = 10
-    PIN_GAUZE = 11
+    # PIN_GAUZE = 11  # [DISABLED: 2-item dispensing only]
 
     def __init__(self):
         self.buffer = ""
@@ -54,28 +54,27 @@ class ArduinoFirmwareSimulator:
 
     def _process_command(self, cmd: str) -> List[str]:
         resps = []
-        # Pattern match <DISP:b,a,g>
-        match = re.match(r"^<DISP:(\d+),(\d+),(\d+)>$", cmd)
+        # Pattern match 2-item format <DISP:b,a>
+        match = re.match(r"^<DISP:(\d+),(\d+)>$", cmd)
         if match:
-            b, a, g = int(match.group(1)), int(match.group(2)), int(match.group(3))
+            b, a = int(match.group(1)), int(match.group(2))
             do_b = (b == 1)
             do_a = (a == 1)
-            do_g = (g == 1)
 
-            resps.append(f"ACK:DISP:{1 if do_b else 0},{1 if do_a else 0},{1 if do_g else 0}")
+            resps.append(f"ACK:DISP:{1 if do_b else 0},{1 if do_a else 0}")
 
-            if do_b or do_a or do_g:
+            if do_b or do_a:
                 self.led_status = True
                 if do_b:
                     resps.append("STATUS:DISPENSING_BANDAGE")
                 if do_a:
                     resps.append("STATUS:DISPENSING_ALCOHOL")
-                if do_g:
-                    resps.append("STATUS:DISPENSING_GAUZE")
                 self.led_status = False
                 resps.append("STATUS:DISPENSE_COMPLETE")
             else:
                 resps.append("STATUS:HOLD_ALL")
+        # Legacy 3-item format commented out:
+        # match3 = re.match(r"^<DISP:(\d+),(\d+),(\d+)>$", cmd)
         elif cmd == "<PING>":
             resps.append("PONG")
         else:
@@ -101,23 +100,24 @@ def run_protocol_tests() -> Tuple[List[TestResult], int, int]:
     resps = sim.feed_bytes(b"<PING>\n")
     assert_test("Ping-Pong Keepalive", resps == ["PONG"], f"Expected ['PONG'], got {resps}")
 
-    # Test 2: All 8 Dispense Permutations
+    # Test 2: All 4 Dispense Permutations (2 items: Bandage, Alcohol Pad)
     all_combos = [
-        (0, 0, 0, ["ACK:DISP:0,0,0", "STATUS:HOLD_ALL"]),
-        (1, 0, 0, ["ACK:DISP:1,0,0", "STATUS:DISPENSING_BANDAGE", "STATUS:DISPENSE_COMPLETE"]),
-        (0, 1, 0, ["ACK:DISP:0,1,0", "STATUS:DISPENSING_ALCOHOL", "STATUS:DISPENSE_COMPLETE"]),
-        (0, 0, 1, ["ACK:DISP:0,0,1", "STATUS:DISPENSING_GAUZE", "STATUS:DISPENSE_COMPLETE"]),
-        (1, 1, 0, ["ACK:DISP:1,1,0", "STATUS:DISPENSING_BANDAGE", "STATUS:DISPENSING_ALCOHOL", "STATUS:DISPENSE_COMPLETE"]),
-        (1, 0, 1, ["ACK:DISP:1,0,1", "STATUS:DISPENSING_BANDAGE", "STATUS:DISPENSING_GAUZE", "STATUS:DISPENSE_COMPLETE"]),
-        (0, 1, 1, ["ACK:DISP:0,1,1", "STATUS:DISPENSING_ALCOHOL", "STATUS:DISPENSING_GAUZE", "STATUS:DISPENSE_COMPLETE"]),
-        (1, 1, 1, ["ACK:DISP:1,1,1", "STATUS:DISPENSING_BANDAGE", "STATUS:DISPENSING_ALCOHOL", "STATUS:DISPENSING_GAUZE", "STATUS:DISPENSE_COMPLETE"]),
+        (0, 0, ["ACK:DISP:0,0", "STATUS:HOLD_ALL"]),
+        (1, 0, ["ACK:DISP:1,0", "STATUS:DISPENSING_BANDAGE", "STATUS:DISPENSE_COMPLETE"]),
+        (0, 1, ["ACK:DISP:0,1", "STATUS:DISPENSING_ALCOHOL", "STATUS:DISPENSE_COMPLETE"]),
+        (1, 1, ["ACK:DISP:1,1", "STATUS:DISPENSING_BANDAGE", "STATUS:DISPENSING_ALCOHOL", "STATUS:DISPENSE_COMPLETE"]),
     ]
+    # 3-item permutations commented out:
+    # (0, 0, 1, ["ACK:DISP:0,0,1", "STATUS:DISPENSING_GAUZE", "STATUS:DISPENSE_COMPLETE"]),
+    # (1, 0, 1, ["ACK:DISP:1,0,1", "STATUS:DISPENSING_BANDAGE", "STATUS:DISPENSING_GAUZE", "STATUS:DISPENSE_COMPLETE"]),
+    # (0, 1, 1, ["ACK:DISP:0,1,1", "STATUS:DISPENSING_ALCOHOL", "STATUS:DISPENSING_GAUZE", "STATUS:DISPENSE_COMPLETE"]),
+    # (1, 1, 1, ["ACK:DISP:1,1,1", "STATUS:DISPENSING_BANDAGE", "STATUS:DISPENSING_ALCOHOL", "STATUS:DISPENSING_GAUZE", "STATUS:DISPENSE_COMPLETE"]),
 
-    for b, a, g, expected in all_combos:
+    for b, a, expected in all_combos:
         sim = ArduinoFirmwareSimulator()
-        cmd = f"<DISP:{b},{a},{g}>\n".encode('ascii')
+        cmd = f"<DISP:{b},{a}>\n".encode('ascii')
         resps = sim.feed_bytes(cmd)
-        test_name = f"Dispense Combination ({b},{a},{g})"
+        test_name = f"Dispense Combination ({b},{a})"
         assert_test(test_name, resps == expected, f"Cmd: {cmd.strip()}, Expected: {expected}, Got: {resps}")
 
     # Test 3: Framing Noise Resilience & Prefix Garbage
@@ -127,10 +127,10 @@ def run_protocol_tests() -> Tuple[List[TestResult], int, int]:
 
     # Test 4: Concatenated Multi-Packet Stream
     sim = ArduinoFirmwareSimulator()
-    resps = sim.feed_bytes(b"<PING><DISP:1,0,0><PING>")
+    resps = sim.feed_bytes(b"<PING><DISP:1,0><PING>")
     expected = [
         "PONG",
-        "ACK:DISP:1,0,0",
+        "ACK:DISP:1,0",
         "STATUS:DISPENSING_BANDAGE",
         "STATUS:DISPENSE_COMPLETE",
         "PONG"

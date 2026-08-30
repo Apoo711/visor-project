@@ -60,17 +60,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         info!("Can Help: {}", analysis.can_help);
                         info!("Reasoning: {}", analysis.reasoning);
                         info!(
-                            "Dispense Plan -> Bandage: {}, Alcohol Pad: {}, Gauze Pad: {}",
+                            "Dispense Plan -> Bandage: {}, Alcohol Pad: {}",
                             analysis.dispense.bandage,
                             analysis.dispense.alcohol_pad,
-                            analysis.dispense.gauze_pad
+                            // analysis.dispense.gauze_pad
                         );
 
                         if analysis.can_help {
                             if let Err(e) = arduino.send_dispense(
                                 analysis.dispense.bandage,
                                 analysis.dispense.alcohol_pad,
-                                analysis.dispense.gauze_pad,
+                                // analysis.dispense.gauze_pad,
                             ) {
                                 error!("Serial communication error to Arduino: {}", e);
                             } else if let Ok(ack) = arduino.read_response() {

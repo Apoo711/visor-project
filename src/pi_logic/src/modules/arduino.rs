@@ -12,7 +12,7 @@ pub enum ArduinoResponse {
     AckDispense {
         bandage: bool,
         alcohol: bool,
-        gauze: bool,
+        // gauze: bool, // [DISABLED: 2-item dispensing only]
     },
     StatusDispensing(String),
     StatusHoldAll,
@@ -45,13 +45,21 @@ pub fn parse_serial_response(raw: &str) -> ArduinoResponse {
     }
     if let Some(parts) = clean.strip_prefix("ACK:DISP:") {
         let tokens: Vec<&str> = parts.split(',').collect();
-        if tokens.len() == 3 {
+        if tokens.len() == 2 {
             return ArduinoResponse::AckDispense {
                 bandage: tokens[0].trim() == "1",
                 alcohol: tokens[1].trim() == "1",
-                gauze: tokens[2].trim() == "1",
+                // gauze: false,
             };
         }
+        // // [DISABLED: 3-item support]
+        // if tokens.len() == 3 {
+        //     return ArduinoResponse::AckDispense {
+        //         bandage: tokens[0].trim() == "1",
+        //         alcohol: tokens[1].trim() == "1",
+        //         // gauze: tokens[2].trim() == "1",
+        //     };
+        // }
     }
     if let Some(err) = clean.strip_prefix("ERR:") {
         return ArduinoResponse::Error(err.to_string());
@@ -59,11 +67,12 @@ pub fn parse_serial_response(raw: &str) -> ArduinoResponse {
     ArduinoResponse::Unknown(clean.to_string())
 }
 
-pub fn format_dispense_command(bandage: bool, alcohol_pad: bool, gauze_pad: bool) -> String {
+pub fn format_dispense_command(bandage: bool, alcohol_pad: bool/*, gauze_pad: bool*/) -> String {
     let b = if bandage { 1 } else { 0 };
     let a = if alcohol_pad { 1 } else { 0 };
-    let g = if gauze_pad { 1 } else { 0 };
-    format!("<DISP:{},{},{}>\n", b, a, g)
+    // let g = if gauze_pad { 1 } else { 0 };
+    // format!("<DISP:{},{},{}>\n", b, a, g)
+    format!("<DISP:{},{}>\n", b, a)
 }
 
 pub fn format_ping_command() -> String {
@@ -90,15 +99,15 @@ impl ArduinoBridge {
         &mut self,
         bandage: bool,
         alcohol_pad: bool,
-        gauze_pad: bool,
+        // gauze_pad: bool,
     ) -> Result<(), std::io::Error> {
-        let payload = format_dispense_command(bandage, alcohol_pad, gauze_pad);
+        let payload = format_dispense_command(bandage, alcohol_pad/*, gauze_pad*/);
         debug!("Sending framed dispense command: {}", payload.trim());
         self.send_bytes(payload.as_bytes())
     }
 
     pub fn send_hold(&mut self) -> Result<(), std::io::Error> {
-        self.send_dispense(false, false, false)
+        self.send_dispense(false, false/*, false*/)
     }
 
     pub fn send_ping(&mut self) -> Result<(), std::io::Error> {
@@ -135,37 +144,26 @@ mod tests {
     #[test]
     fn test_format_dispense_command_all_combinations() {
         assert_eq!(
-            format_dispense_command(false, false, false),
-            "<DISP:0,0,0>\n"
+            format_dispense_command(false, false),
+            "<DISP:0,0>\n"
         );
         assert_eq!(
-            format_dispense_command(true, false, false),
-            "<DISP:1,0,0>\n"
+            format_dispense_command(true, false),
+            "<DISP:1,0>\n"
         );
         assert_eq!(
-            format_dispense_command(false, true, false),
-            "<DISP:0,1,0>\n"
+            format_dispense_command(false, true),
+            "<DISP:0,1>\n"
         );
         assert_eq!(
-            format_dispense_command(false, false, true),
-            "<DISP:0,0,1>\n"
+            format_dispense_command(true, true),
+            "<DISP:1,1>\n"
         );
-        assert_eq!(
-            format_dispense_command(true, true, false),
-            "<DISP:1,1,0>\n"
-        );
-        assert_eq!(
-            format_dispense_command(true, false, true),
-            "<DISP:1,0,1>\n"
-        );
-        assert_eq!(
-            format_dispense_command(false, true, true),
-            "<DISP:0,1,1>\n"
-        );
-        assert_eq!(
-            format_dispense_command(true, true, true),
-            "<DISP:1,1,1>\n"
-        );
+        // // [DISABLED: 3-item combinations]
+        // assert_eq!(format_dispense_command(false, false, true), "<DISP:0,0,1>\n");
+        // assert_eq!(format_dispense_command(true, false, true), "<DISP:1,0,1>\n");
+        // assert_eq!(format_dispense_command(false, true, true), "<DISP:0,1,1>\n");
+        // assert_eq!(format_dispense_command(true, true, true), "<DISP:1,1,1>\n");
     }
 
     #[test]
@@ -185,19 +183,19 @@ mod tests {
     #[test]
     fn test_parse_serial_response_ack() {
         assert_eq!(
-            parse_serial_response("ACK:DISP:1,0,1"),
+            parse_serial_response("ACK:DISP:1,0"),
             ArduinoResponse::AckDispense {
                 bandage: true,
                 alcohol: false,
-                gauze: true,
+                // gauze: false,
             }
         );
         assert_eq!(
-            parse_serial_response("ACK:DISP:0,1,0\n"),
+            parse_serial_response("ACK:DISP:0,1\n"),
             ArduinoResponse::AckDispense {
                 bandage: false,
                 alcohol: true,
-                gauze: false,
+                // gauze: false,
             }
         );
     }
@@ -216,10 +214,11 @@ mod tests {
             parse_serial_response("STATUS:DISPENSING_ALCOHOL"),
             ArduinoResponse::StatusDispensing("ALCOHOL".to_string())
         );
-        assert_eq!(
-            parse_serial_response("STATUS:DISPENSING_GAUZE"),
-            ArduinoResponse::StatusDispensing("GAUZE".to_string())
-        );
+        // // [DISABLED: 3rd item gauze status]
+        // assert_eq!(
+        //     parse_serial_response("STATUS:DISPENSING_GAUZE"),
+        //     ArduinoResponse::StatusDispensing("GAUZE".to_string())
+        // );
         assert_eq!(
             parse_serial_response("STATUS:DISPENSE_COMPLETE"),
             ArduinoResponse::StatusComplete

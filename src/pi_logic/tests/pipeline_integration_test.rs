@@ -31,13 +31,13 @@ fn test_end_to_end_minor_injury_pipeline_flow() {
     assert_eq!(request_payload["model"], "gemini-3.7-flash");
 
     // 3. AI Assessment Response Parsing
+    // Note: 3rd item gauze_pad disabled for 2-item dispensing
     let simulated_ai_json = r#"{
         "can_help": true,
         "reasoning": "Minor skin laceration on left forefinger. Requires sanitization and sterile bandage.",
         "dispense": {
             "bandage": true,
-            "alcohol_pad": true,
-            "gauze_pad": false
+            "alcohol_pad": true
         },
         "video_search_query": "how to properly dress a finger cut"
     }"#;
@@ -46,25 +46,25 @@ fn test_end_to_end_minor_injury_pipeline_flow() {
     assert!(analysis.can_help);
     assert!(analysis.dispense.bandage);
     assert!(analysis.dispense.alcohol_pad);
-    assert!(!analysis.dispense.gauze_pad);
+    // assert!(!analysis.dispense.gauze_pad); // [DISABLED: 3rd item]
 
     // 4. Arduino Dispense Command Generation & Simulated Handshake
     let serial_cmd = format_dispense_command(
         analysis.dispense.bandage,
         analysis.dispense.alcohol_pad,
-        analysis.dispense.gauze_pad,
+        // analysis.dispense.gauze_pad,
     );
-    assert_eq!(serial_cmd, "<DISP:1,1,0>\n");
+    assert_eq!(serial_cmd, "<DISP:1,1>\n");
 
     // Simulated Arduino ACK and Status sequence
-    let simulated_ack = "ACK:DISP:1,1,0\r\n";
+    let simulated_ack = "ACK:DISP:1,1\r\n";
     let parsed_ack = parse_serial_response(simulated_ack);
     assert_eq!(
         parsed_ack,
         ArduinoResponse::AckDispense {
             bandage: true,
             alcohol: true,
-            gauze: false
+            // gauze: false
         }
     );
 
@@ -118,13 +118,13 @@ fn test_end_to_end_minor_injury_pipeline_flow() {
 #[test]
 fn test_end_to_end_emergency_hold_pipeline_flow() {
     // Simulated AI assessment for severe injury requiring emergency hospitalization
+    // Note: 3rd item gauze_pad disabled for 2-item dispensing
     let simulated_emergency_json = r#"{
         "can_help": false,
         "reasoning": "Deep arterial laceration with severe hemorrhaging detected. Direct pressure required; emergency medical response must be summoned immediately.",
         "dispense": {
             "bandage": false,
-            "alcohol_pad": false,
-            "gauze_pad": false
+            "alcohol_pad": false
         },
         "video_search_query": null
     }"#;
@@ -137,7 +137,7 @@ fn test_end_to_end_emergency_hold_pipeline_flow() {
         DispenseItems {
             bandage: false,
             alcohol_pad: false,
-            gauze_pad: false
+            // gauze_pad: false
         }
     );
 
@@ -145,9 +145,9 @@ fn test_end_to_end_emergency_hold_pipeline_flow() {
     let serial_cmd = format_dispense_command(
         analysis.dispense.bandage,
         analysis.dispense.alcohol_pad,
-        analysis.dispense.gauze_pad,
+        // analysis.dispense.gauze_pad,
     );
-    assert_eq!(serial_cmd, "<DISP:0,0,0>\n");
+    assert_eq!(serial_cmd, "<DISP:0,0>\n");
 
     // Simulated Arduino Hold response
     let simulated_hold_response = "STATUS:HOLD_ALL\n";
@@ -159,37 +159,37 @@ fn test_end_to_end_emergency_hold_pipeline_flow() {
 
 #[test]
 fn test_end_to_end_all_items_dispense_pipeline_flow() {
+    // Note: 3rd item gauze_pad disabled for 2-item dispensing
     let simulated_all_supplies_json = r#"{
         "can_help": true,
-        "reasoning": "Moderate scrape requiring alcohol prep, gauze padding, and securing bandage.",
+        "reasoning": "Moderate scrape requiring alcohol prep and securing bandage.",
         "dispense": {
             "bandage": true,
-            "alcohol_pad": true,
-            "gauze_pad": true
+            "alcohol_pad": true
         },
-        "video_search_query": "how to clean scrape and apply gauze pad"
+        "video_search_query": "how to clean scrape and apply bandage"
     }"#;
 
     let analysis: VisorAnalysis = serde_json::from_str(simulated_all_supplies_json).unwrap();
     assert!(analysis.can_help);
     assert!(analysis.dispense.bandage);
     assert!(analysis.dispense.alcohol_pad);
-    assert!(analysis.dispense.gauze_pad);
+    // assert!(analysis.dispense.gauze_pad);
 
     let serial_cmd = format_dispense_command(
         analysis.dispense.bandage,
         analysis.dispense.alcohol_pad,
-        analysis.dispense.gauze_pad,
+        // analysis.dispense.gauze_pad,
     );
-    assert_eq!(serial_cmd, "<DISP:1,1,1>\n");
+    assert_eq!(serial_cmd, "<DISP:1,1>\n");
 
-    let ack_resp = parse_serial_response("ACK:DISP:1,1,1");
+    let ack_resp = parse_serial_response("ACK:DISP:1,1");
     assert_eq!(
         ack_resp,
         ArduinoResponse::AckDispense {
             bandage: true,
             alcohol: true,
-            gauze: true
+            // gauze: true
         }
     );
 }
