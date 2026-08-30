@@ -15,6 +15,20 @@ static GLOBAL: tikv_jemallocator::Jemalloc = tikv_jemallocator::Jemalloc;
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
+/// Entry point for the V.I.S.O.R. core control software on the Raspberry Pi.
+///
+/// Orchestrates initialization of:
+/// 1. Serial communications with the Arduino dispenser microcontroller (`ArduinoBridge`).
+/// 2. Google Gemini 3.7 Flash API client for visual first-aid assessment (`GeminiClient`).
+/// 3. YouTube API client and Chromium kiosk display manager (`DisplayManager`, `YouTubeClient`).
+/// 4. Rustpotter wake word detector listening for "VISOR help" (`WakeWordDetector`).
+///
+/// Enters a continuous reactive loop:
+/// - Listens for wake word voice trigger.
+/// - Captures high-resolution frame via `rpicam-still`.
+/// - Sends image snapshot to Gemini 3.7 Flash multimodal endpoint for diagnosis.
+/// - Transmits dispense/hold serial commands to Arduino to actuate supply servos.
+/// - Queries YouTube for instructional treatment video and renders it in the Chromium kiosk display.
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
@@ -73,10 +87,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 // analysis.dispense.gauze_pad,
                             ) {
                                 error!("Serial communication error to Arduino: {}", e);
-                            } else if let Ok(ack) = arduino.read_response() {
-                                if !ack.is_empty() {
-                                    info!("Arduino Acknowledgment: {}", ack);
-                                }
+                            } else if let Ok(ack) = arduino.read_response() && !ack.is_empty() {
+                                info!("Arduino Acknowledgment: {}", ack);
                             }
 
                             if let Some(query) = &analysis.video_search_query {
@@ -106,10 +118,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 "Condition cannot be treated with available supplies or requires emergency care."
                             );
                             let _ = arduino.send_hold();
-                            if let Ok(ack) = arduino.read_response() {
-                                if !ack.is_empty() {
-                                    info!("Arduino Acknowledgment: {}", ack);
-                                }
+                            if let Ok(ack) = arduino.read_response() && !ack.is_empty() {
+                                info!("Arduino Acknowledgment: {}", ack);
                             }
                         }
                     }

@@ -1,15 +1,82 @@
-# V.I.S.O.R. System Verification & Test Report
+# 🏥 V.I.S.O.R. System Verification & Test Report
 
-**System Name:** V.I.S.O.R. (Visual Inspection & Smart Occupational Relief)  
-**Report Version:** 1.0.0  
-**Test Status:** **ALL 48 AUTOMATED TESTS PASSED (100% PASS RATE)**  
-**Environment:** Cross-Platform Local Test Harness (Windows/Linux x86_64 & Linux ARM64 Target)
+<div align="center">
+
+![Test Status](https://img.shields.io/badge/Test%20Suite-48%20%2F%2048%20Passed-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)
+![Pass Rate](https://img.shields.io/badge/Pass%20Rate-100.0%25-success?style=for-the-badge&logo=checkmarx&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-2024%20Edition-orange?style=for-the-badge&logo=rust&logoColor=white)
+![Hardware](https://img.shields.io/badge/Hardware-Pi%205%20%2B%20Arduino%20Uno-8A2BE2?style=for-the-badge&logo=raspberrypi&logoColor=white)
+
+</div>
 
 ---
 
-## 1. Executive Summary & Test Dashboard
+> [!IMPORTANT]
+> **Executive Verification Summary:**
+> - **Overall Status:** **48 / 48 Tests Passed (100% Pass Rate)**
+> - **Execution Timestamp:** `2026-08-18 08:21:05 UTC`
+> - **Target Platform:** `Linux x86_64` (Target: Linux ARM64 Raspberry Pi 5 & ATmega328P Arduino Uno)
+> - **Git Reference:** [`main`](https://github.com/Apoo711/visor-project/tree/main) (`c5c0b49`)
 
-This document provides the formal test report for the V.I.S.O.R. dual-controller first-aid dispensing system. The testing suite provides comprehensive test coverage spanning firmware serial protocols, audio signal downmixing/normalization, AI interaction schema validation, browser kiosk URL generation, end-to-end simulated triage pipelines, and high-precision latency benchmarks.
+---
+
+## 📊 1. Test Distribution & Pipeline Architecture
+
+### 1.1. Test Suite Composition
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#0284c7', 'lineColor': '#64748b', 'secondaryColor': '#a855f7', 'tertiaryColor': '#10b981', 'quaternaryColor': '#f59e0b', 'pie1': '#38bdf8', 'pie2': '#f59e0b', 'pie3': '#10b981', 'pie4': '#a855f7' } } }%%
+pie title V.I.S.O.R. Test Coverage Distribution (48 Total Tests)
+    "Rust Pi Logic Units" : 27
+    "Arduino Protocol & Firmware" : 14
+    "Latency Benchmarks" : 4
+    "End-to-End Pipelines" : 3
+```
+
+### 1.2. Verification Topology
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'darkMode': true, 'background': 'transparent', 'fontFamily': 'ui-sans-serif, system-ui, -apple-system, sans-serif' } } }%%
+flowchart TD
+    classDef audio fill:#0f2744,stroke:#38bdf8,stroke-width:2px,color:#e0f2fe,rx:8,ry:8
+    classDef vision fill:#28154e,stroke:#c084fc,stroke-width:2px,color:#f3e8ff,rx:8,ry:8
+    classDef display fill:#063b2f,stroke:#34d399,stroke-width:2px,color:#d1fae5,rx:8,ry:8
+    classDef hardware fill:#422006,stroke:#fbbf24,stroke-width:2px,color:#fef3c7,rx:8,ry:8
+
+    subgraph AudioSubsystem ["&nbsp;🎙️ Audio &amp; Wake Word Subsystem&nbsp;"]
+        A1["<b>CPAL Mic Capture</b><br/><small>16kHz Mono PCM Stream</small>"]:::audio
+        A2["<b>Mono Downmixing</b><br/><small>f32 Normalization Buffer</small>"]:::audio
+        A3["<b>Rustpotter KWS</b><br/><small>'VISOR Help' Trigger</small>"]:::audio
+        A1 --> A2 --> A3
+    end
+
+    subgraph VisionSubsystem ["&nbsp;📸 Vision &amp; AI Subsystem&nbsp;"]
+        B1["<b>rpicam-still Capture</b><br/><small>High-Res Snapshot JPEG</small>"]:::vision
+        B2["<b>Base64 Payload Framing</b><br/><small>JSON Multipart Builder</small>"]:::vision
+        B3["<b>Gemini 3.7 Flash</b><br/><small>Multimodal AI Medical Triage</small>"]:::vision
+        B1 --> B2 --> B3
+    end
+
+    subgraph DisplaySubsystem ["&nbsp;🖥️ Kiosk Guidance Subsystem&nbsp;"]
+        C1["<b>YouTube Data API v3</b><br/><small>First-Aid Video Search</small>"]:::display
+        C2["<b>Chromium Kiosk</b><br/><small>Embedded Video Autoplay</small>"]:::display
+        C3["<b>Standby Reset</b><br/><small>Watchdog Timeout / Idle UI</small>"]:::display
+        C1 --> C2 --> C3
+    end
+
+    subgraph HardwareBridge ["&nbsp;⚡ Arduino UART Dispenser Controller&nbsp;"]
+        D1["<b>Protocol Serialization</b><br/><small>&lt;DISP:b,a,g&gt; UART Frame</small>"]:::hardware
+        D2["<b>Servo Actuation</b><br/><small>Bandage / Alcohol / Gauze</small>"]:::hardware
+        D3["<b>Status Telemetry</b><br/><small>Safety Lock &amp; ACK State</small>"]:::hardware
+        D1 --> D2 --> D3
+    end
+
+    A3 ==>|"Wake Detected"| B1
+    B3 ==>|"Triage Video Query"| C1
+    B3 ==>|"Dispense Payload"| D1
+```
+
+---
+
+## 📋 2. Comprehensive Test Matrix
 
 ```
 ================================================================================
@@ -17,160 +84,185 @@ This document provides the formal test report for the V.I.S.O.R. dual-controller
 ================================================================================
  Suite Name                       Scope                  Tests   Passed   Failed
 --------------------------------------------------------------------------------
- Rust Unit Tests (lib.rs)         Pi Logic Modules         27       27       0
- Rust Integration Tests           End-to-End Pipelines      3        3       0
- Rust Latency Benchmarks          Micro-benchmarks          4        4       0
- Arduino Protocol Suite (Python)  Firmware & Framing       14       14       0
+ Rust Unit Tests (lib.rs)         Pi Logic Modules         27      27       0 
+ Rust Integration Tests           End-to-End Pipelines      3       3        0 
+ Rust Latency Benchmarks          Micro-benchmarks          4       4        0 
+ Arduino Protocol Suite (Python)  Firmware & Framing       14      14       0 
 --------------------------------------------------------------------------------
- TOTAL TESTS EXECUTED                                      48       48       0
+ TOTAL TESTS EXECUTED                                      48      48       0 
  OVERALL STATUS                                                   [ PASS (100%) ]
 ================================================================================
 ```
 
----
+### 2.1. 🔌 Arduino Serial Bridge (`modules/arduino.rs` & `arduino_control.ino`)
+Validates packet framing, baud rate communication, binary flag encoding, and response telemetry.
 
-## 2. Module Test Breakdown & Coverage Matrix
+| Status | Test Identifier | Scope / Verification Target |
+| :---: | :--- | :--- |
+| 🟢 **PASS** | `test_format_dispense_command_all_combinations` | Format Dispense Command All Combinations |
+| 🟢 **PASS** | `test_format_ping_command` | Format Ping Command |
+| 🟢 **PASS** | `test_parse_serial_response_ack` | Parse Serial Response Ack |
+| 🟢 **PASS** | `test_parse_serial_response_ready` | Parse Serial Response Ready |
+| 🟢 **PASS** | `test_parse_serial_response_status_messages` | Parse Serial Response Status Messages |
+| 🟢 **PASS** | `test_parse_serial_response_errors_and_edge_cases` | Parse Serial Response Errors And Edge Cases |
 
-### 2.1. Arduino Serial Bridge (`modules/arduino.rs` & `arduino_control.ino`)
-Tests the packet framing, baud rate protocol, command encoding, and status acknowledgment parsing between the Raspberry Pi and Arduino Uno.
 
-| Test Function | Target Feature | Validation Logic | Status |
-| :--- | :--- | :--- | :--- |
-| `test_format_dispense_command_all_combinations` | Command Encoding | Verifies correct `<DISP:b,a,g>\n` generation for all 8 boolean permutations | **PASS** |
-| `test_format_ping_command` | Keepalive | Verifies `<PING>\n` payload generation | **PASS** |
-| `test_parse_serial_response_ready` | Status Parsing | Validates `STATUS:READY` detection and whitespace trimming | **PASS** |
-| `test_parse_serial_response_ack` | Handshake ACK | Validates `ACK:DISP:1,0,1` tokenization into boolean flags | **PASS** |
-| `test_parse_serial_response_status_messages` | Status Telemetry | Validates `STATUS:DISPENSING_*`, `STATUS:HOLD_ALL`, `STATUS:DISPENSE_COMPLETE`, and `PONG` | **PASS** |
-| `test_parse_serial_response_errors_and_edge_cases` | Fault Tolerance | Validates `ERR:UNKNOWN_COMMAND`, empty strings, and unstructured text | **PASS** |
+### 2.2. 🧠 Gemini 3.7 Flash AI Medical Assessment (`modules/gemini.rs`)
+Validates structured JSON request payload generation, base64 image encapsulation, and medical emergency triage parsing.
 
-### 2.2. Gemini AI Medical Assessment (`modules/gemini.rs`)
-Validates request payload schema construction, base64 image encapsulation, response parsing, and medical emergency triage deserialization.
+| Status | Test Identifier | Scope / Verification Target |
+| :---: | :--- | :--- |
+| 🟢 **PASS** | `test_build_request_body_structure` | Build Request Body Structure |
+| 🟢 **PASS** | `test_cannot_help_emergency_deserialization` | Cannot Help Emergency Deserialization |
+| 🟢 **PASS** | `test_dispense_items_boolean_deserialization` | Dispense Items Boolean Deserialization |
+| 🟢 **PASS** | `test_extract_response_text_candidates_format` | Extract Response Text Candidates Format |
+| 🟢 **PASS** | `test_extract_response_text_interactions_format` | Extract Response Text Interactions Format |
+| 🟢 **PASS** | `test_extract_response_text_invalid_format` | Extract Response Text Invalid Format |
+| 🟢 **PASS** | `test_malformed_json_failure` | Malformed Json Failure |
+| 🟢 **PASS** | `test_missing_dispense_field_failure` | Missing Dispense Field Failure |
+| 🟢 **PASS** | `test_omitted_video_search_query` | Omitted Video Search Query |
 
-| Test Function | Target Feature | Validation Logic | Status |
-| :--- | :--- | :--- | :--- |
-| `test_dispense_items_boolean_deserialization` | Minor Injury Assessment | Validates deserialization of positive triage with selective dispensing | **PASS** |
-| `test_cannot_help_emergency_deserialization` | Emergency Triage | Validates `can_help = false`, hold flags, and null `video_search_query` | **PASS** |
-| `test_omitted_video_search_query` | Schema Flexibility | Validates optional video query field when omitted from JSON | **PASS** |
-| `test_malformed_json_failure` | Error Handling | Asserts deserialization failure on broken/incomplete JSON | **PASS** |
-| `test_missing_dispense_field_failure` | Schema Enforcement | Asserts deserialization error when `dispense` object is missing | **PASS** |
-| `test_build_request_body_structure` | API Formatting | Verifies Gemini 3.7 Flash model targeting, system prompt, and MIME structure | **PASS** |
-| `test_extract_response_text_interactions_format` | Response Parsing | Validates parsing of `output[0].text` interaction format | **PASS** |
-| `test_extract_response_text_candidates_format` | Response Parsing | Validates fallback parsing of `candidates[0].content.parts[0].text` format | **PASS** |
-| `test_extract_response_text_invalid_format` | Error Extraction | Asserts error extraction when response format lacks standard parts | **PASS** |
 
-### 2.3. Video Guidance & Kiosk Display (`modules/youtube.rs`)
-Tests YouTube Data API v3 search response tokenization, video ID extraction, and Chromium kiosk URL formatting.
+### 2.3. 📺 Video Guidance & Kiosk Display (`modules/youtube.rs`)
+Validates YouTube Data API v3 search response tokenization, video ID extraction, and Chromium kiosk URL formatting.
 
-| Test Function | Target Feature | Validation Logic | Status |
-| :--- | :--- | :--- | :--- |
-| `test_format_embed_url` | Embed Formatting | Validates `https://www.youtube-nocookie.com/embed/{id}?autoplay=1...` | **PASS** |
-| `test_parse_youtube_search_response_valid` | API Deserialization | Extracts video ID, title, and watch URL from search item list | **PASS** |
-| `test_parse_youtube_search_response_empty_items` | Empty Results | Handles empty `items: []` list returning `None` | **PASS** |
-| `test_parse_youtube_search_response_missing_video_id` | Channel/Playlist Filter | Rejects non-video items missing `videoId` | **PASS** |
-| `test_resolve_standby_url_fallback` | Kiosk Fallback | Generates embedded HTML data URI when local asset is missing | **PASS** |
+| Status | Test Identifier | Scope / Verification Target |
+| :---: | :--- | :--- |
+| 🟢 **PASS** | `test_format_embed_url` | Format Embed Url |
+| 🟢 **PASS** | `test_parse_youtube_search_response_empty_items` | Parse Youtube Search Response Empty Items |
+| 🟢 **PASS** | `test_parse_youtube_search_response_missing_video_id` | Parse Youtube Search Response Missing Video Id |
+| 🟢 **PASS** | `test_parse_youtube_search_response_valid` | Parse Youtube Search Response Valid |
+| 🟢 **PASS** | `test_resolve_standby_url_fallback` | Resolve Standby Url Fallback |
 
-### 2.4. Audio Signal Preprocessing (`modules/audio.rs`)
-Validates microphone PCM stream conversion, multi-channel downmixing, and 16-bit integer to floating-point sample normalization.
 
-| Test Function | Target Feature | Validation Logic | Status |
-| :--- | :--- | :--- | :--- |
-| `test_downmix_f32_mono` | Mono Pass-through | Verifies 1-channel buffer unchanged | **PASS** |
-| `test_downmix_f32_stereo` | Stereo Downmixing | Verifies exact channel averaging `(L + R) / 2` | **PASS** |
-| `test_downmix_f32_quad_channel` | 4-Channel Array | Verifies multi-microphone array downmixing | **PASS** |
-| `test_convert_i16_to_f32_mono` | PCM Normalization | Verifies $[-32768, 32767] \to [-1.0, 1.0]$ normalization | **PASS** |
-| `test_convert_i16_to_f32_stereo` | Stereo PCM Downmix | Converts and normalizes interleaved 16-bit stereo PCM stream | **PASS** |
+### 2.4. 🔊 Audio Signal Preprocessing (`modules/audio.rs`)
+Validates microphone PCM stream conversion, multi-channel downmixing, and 16-bit integer normalization.
 
-### 2.5. Vision & File I/O Subsystem (`modules/input.rs`)
+| Status | Test Identifier | Scope / Verification Target |
+| :---: | :--- | :--- |
+| 🟢 **PASS** | `test_convert_i16_to_f32_mono` | Convert I16 To F32 Mono |
+| 🟢 **PASS** | `test_convert_i16_to_f32_stereo` | Convert I16 To F32 Stereo |
+| 🟢 **PASS** | `test_downmix_f32_mono` | Downmix F32 Mono |
+| 🟢 **PASS** | `test_downmix_f32_quad_channel` | Downmix F32 Quad Channel |
+| 🟢 **PASS** | `test_downmix_f32_stereo` | Downmix F32 Stereo |
+
+
+### 2.5. 📁 Vision & File I/O Subsystem (`modules/input.rs`)
 Validates target snapshot directory resolution, recursive directory creation, and error boundaries.
 
-| Test Function | Target Feature | Validation Logic | Status |
-| :--- | :--- | :--- | :--- |
-| `test_ensure_parent_dir_creates_directories` | Directory Handling | Creates missing nested parent directories for camera output | **PASS** |
-| `test_ensure_parent_dir_handles_flat_filename` | Path Parsing | Handles flat filename paths without parent directories | **PASS** |
+| Status | Test Identifier | Scope / Verification Target |
+| :---: | :--- | :--- |
+| 🟢 **PASS** | `test_ensure_parent_dir_handles_flat_filename` | Ensure Parent Dir Handles Flat Filename |
+| 🟢 **PASS** | `test_ensure_parent_dir_creates_directories` | Ensure Parent Dir Creates Directories |
+
 
 ---
 
-## 3. End-to-End Pipeline Integration Tests
+## 🔄 3. End-to-End Pipeline Integration Flows
 
 Simulated full pipeline integration flows located in `src/pi_logic/tests/pipeline_integration_test.rs`:
 
+| Status | Test Identifier | Scope / Verification Target |
+| :---: | :--- | :--- |
+| 🟢 **PASS** | `test_end_to_end_emergency_hold_pipeline_flow` | End To End Emergency Hold Pipeline Flow |
+| 🟢 **PASS** | `test_end_to_end_all_items_dispense_pipeline_flow` | End To End All Items Dispense Pipeline Flow |
+| 🟢 **PASS** | `test_end_to_end_minor_injury_pipeline_flow` | End To End Minor Injury Pipeline Flow |
+
+
+<details>
+<summary><b>🔍 Pipeline Flow Descriptions (Click to Expand)</b></summary>
+
 1. **Minor Injury Pipeline Flow (`test_end_to_end_minor_injury_pipeline_flow`)**:
-   - Audio trigger preprocessing $\to$ Camera snapshot directory creation $\to$ Base64 request body generation $\to$ AI triage response parsing (`can_help: true`) $\to$ Serial packet generation (`<DISP:1,1,0>\n`) $\to$ Simulated Arduino ACK & dispensing sequence $\to$ YouTube instructional video query resolution $\to$ Standby return.
-   - **Result:** **PASSED**
+   - Audio trigger preprocessing → Camera snapshot directory creation → Base64 request body generation → AI triage response parsing (`can_help: true`) → Serial packet generation (`<DISP:1,1,0>\n`) → Simulated Arduino ACK & dispensing sequence → YouTube instructional video query resolution → Standby return.
 
-2. **Emergency Hold Flow (`test_end_to_end_emergency_hold_pipeline_flow`)**:
-   - Severe trauma detection $\to$ `can_help: false` $\to$ Dispenser lockout (`<DISP:0,0,0>\n`) $\to$ Arduino `STATUS:HOLD_ALL` acknowledgment.
-   - **Result:** **PASSED**
+2. **Emergency Hold Pipeline Flow (`test_end_to_end_emergency_hold_pipeline_flow`)**:
+   - Audio trigger → Image capture → AI triage response parsing (`can_help: false`) → Safety lock command generation (`<DISP:0,0,0>\n`) → Arduino hold confirmation → Kiosk display standby safety latch.
 
-3. **All Supplies Dispense Flow (`test_end_to_end_all_items_dispense_pipeline_flow`)**:
-   - Comprehensive treatment scenario $\to$ Bandage + Alcohol + Gauze $\to$ `<DISP:1,1,1>\n` $\to$ `ACK:DISP:1,1,1`.
-   - **Result:** **PASSED**
+3. **All Items Dispense Pipeline Flow (`test_end_to_end_all_items_dispense_pipeline_flow`)**:
+   - AI recommendation requesting Bandage, Alcohol Pad, and Gauze Pad simultaneously → Serial packet `<DISP:1,1,1>\n` → Arduino sequential servo dispensing cycles.
 
----
-
-## 4. Latency & Performance Benchmarks
-
-Micro-benchmarks located in `src/pi_logic/tests/latency_benchmarks.rs`:
-
-```
-+-------------------------------------------------------------+-------------------+-----------------+
-| Benchmark Routine                                           | Measured Latency  | SLA Threshold   |
-+-------------------------------------------------------------+-------------------+-----------------+
-| Audio Downmix & Normalization (96,000 samples / 1s audio)   | ~2.03 ms          | < 50.00 ms      |
-| Gemini Request Payload Building (300 KB snapshot image)     | ~25.86 µs         | < 5000.00 µs    |
-| JSON Deserialization (VisorAnalysis struct)                 | ~3.96 µs / op     | < 100.00 µs     |
-| Serial Packet Framing & Response Parsing                    | ~0.80 µs / op     | < 20.00 µs      |
-+-------------------------------------------------------------+-------------------+-----------------+
-```
-
-> [!NOTE]
-> All data transformation and serialization operations on the Raspberry Pi execute in **under 3 milliseconds total**, leaving $>99\%$ of the compute budget dedicated to network transmission and AI model inference.
+</details>
 
 ---
 
-## 5. Arduino Firmware Protocol Suite Results
+## ⚡ 4. Latency Benchmarks & Performance Metrics
 
-Results from `tests/arduino_protocol_suite.py`:
+Microsecond latency validation located in `src/pi_logic/tests/latency_benchmarks.rs`:
 
-```
-======================================================================
-      V.I.S.O.R. ARDUINO PROTOCOL & FIRMWARE VERIFICATION REPORT     
-======================================================================
-Total Tests Executed: 14
-Passed: 14
-Failed: 0
-----------------------------------------------------------------------
-01. [PASS] Ping-Pong Keepalive
-02. [PASS] Dispense Combination (0,0,0) -> Hold All
-03. [PASS] Dispense Combination (1,0,0) -> Bandage Only
-04. [PASS] Dispense Combination (0,1,0) -> Alcohol Pad Only
-05. [PASS] Dispense Combination (0,0,1) -> Gauze Pad Only
-06. [PASS] Dispense Combination (1,1,0) -> Bandage + Alcohol
-07. [PASS] Dispense Combination (1,0,1) -> Bandage + Gauze
-08. [PASS] Dispense Combination (0,1,1) -> Alcohol + Gauze
-09. [PASS] Dispense Combination (1,1,1) -> All Three Items
-10. [PASS] Serial Garbage Prefix Filtering
-11. [PASS] Concatenated Multi-Packet Stream
-12. [PASS] Unknown Command Error Emission (<UNKNOWN_ACTION>)
-13. [PASS] Serial Buffer Overflow Boundary Limit (>64 bytes)
-14. [PASS] Incomplete Frame Reset on New Start Delimiter
-======================================================================
-RESULT: ALL PROTOCOL TESTS PASSED SUCCESSFULLY.
-======================================================================
+| Status | Test Identifier | Scope / Verification Target |
+| :---: | :--- | :--- |
+| 🟢 **PASS** | `test_audio_normalization_and_downmix_latency` | Audio Normalization And Downmix Latency |
+| 🟢 **PASS** | `test_request_payload_building_latency` | Request Payload Building Latency |
+| 🟢 **PASS** | `test_serial_packet_formatting_and_parsing_latency` | Serial Packet Formatting And Parsing Latency |
+| 🟢 **PASS** | `test_json_deserialization_latency` | Json Deserialization Latency |
+
+
+| Subsystem Pipeline Stage | Target SLA Budget | Observed Latency | Headroom Margin | Status |
+| :--- | :---: | :---: | :---: | :---: |
+| 🎙️ **Audio Downmix & Normalization (1s buffer)** | `< 5,000 µs` (5 ms) | `~2.90 ms` | **> 42% Headroom** | 🟢 **OPTIMAL** |
+| 📸 **Gemini Request Payload Framing (300KB)** | `< 500 µs` | `~28.47 µs` | **> 94% Headroom** | ⚡ **SUB-MILLISECOND** |
+| ⚡ **Serial UART Framing & CRC Parsing** | `< 100 µs` | `~0.87 µs` | **> 99% Headroom** | ⚡ **SUB-MICROSECOND** |
+| 🧠 **JSON Triage Deserialization (`VisorAnalysis`)** | `< 500 µs` | `~4.52 µs` | **> 99% Headroom** | ⚡ **SUB-MICROSECOND** |
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'darkMode': true, 'background': 'transparent', 'fontFamily': 'ui-sans-serif, system-ui, -apple-system, sans-serif' } } }%%
+flowchart LR
+    classDef step fill:#0c213b,stroke:#38bdf8,stroke-width:2px,color:#e0f2fe,rx:8,ry:8
+    classDef ultra fill:#06372b,stroke:#34d399,stroke-width:2px,color:#d1fae5,rx:8,ry:8
+
+    subgraph S1 [" 1. Audio Preprocessing "]
+        M1["<b>Audio Downmix</b><br/>⏱️ <b>~2.90 ms</b><br/><small>Budget: &lt; 5.0 ms (42% Margin)</small>"]:::step
+    end
+
+    subgraph S2 [" 2. Vision Serialization "]
+        M2["<b>Base64 Framing</b><br/>⏱️ <b>~28.47 µs</b><br/><small>Budget: &lt; 500 µs (94% Margin)</small>"]:::step
+    end
+
+    subgraph S3 [" 3. AI Deserialization "]
+        M3["<b>JSON Parser</b><br/>⚡ <b>~4.52 µs</b><br/><small>Budget: &lt; 500 µs (99% Margin)</small>"]:::ultra
+    end
+
+    subgraph S4 [" 4. Serial Bridge "]
+        M4["<b>UART Packet</b><br/>⚡ <b>~0.87 µs</b><br/><small>Budget: &lt; 100 µs (99% Margin)</small>"]:::ultra
+    end
+
+    S1 ==>|"Buffer Ready"| S2 ==>|"Payload Built"| S3 ==>|"Command Pack"| S4
 ```
 
 ---
 
-## 6. Hardware-in-the-Loop (HIL) Deployment Verification Checklist
+## 🤖 5. Arduino Firmware & Protocol Verification Suite
 
-For physical deployment verification on the assembled Raspberry Pi 4 + Arduino Uno enclosure:
+Firmware behavioral and serial framing tests executed via Python emulation in `tests/arduino_protocol_suite.py`:
 
-- [ ] **Serial Wiring & Permissions**: Connect Arduino Uno via USB Serial. Confirm port exists (`ls /dev/ttyAMA0` or `ls /dev/ttyUSB*`) and user is in `dialout` group.
-- [ ] **Wake Word Audio Check**: Run `cargo run --release` and verify microphone stream initializes at 44.1/48 kHz. Speak `"VISOR help"` into the microphone and check for terminal trigger log.
-- [ ] **Camera Sensor Test**: Verify `rpicam-still -o /tmp/test.jpg` creates a valid JPEG snapshot in under 1 second.
-- [ ] **Actuator Physical Ejection**:
-  - Test Bandage ejection cycle ($2200\text{ ms}$ push, $150\text{ ms}$ pause, $2300\text{ ms}$ retract).
-  - Test Alcohol Pad ejection cycle.
-  - Test Gauze Pad ejection cycle.
-  - Confirm servos detach to $0\text{ mA}$ idle current after cycle completion.
-- [ ] **Kiosk Video Streaming**: Verify Chromium launches in `--kiosk` mode and automatically displays instructional first-aid video upon receiving Gemini analysis.
+| Status | Test Identifier | Scope / Verification Target |
+| :---: | :--- | :--- |
+| 🟢 **PASS** | `Ping-Pong Keepalive` | Ping-Pong Keepalive |
+| 🟢 **PASS** | `Dispense Combination (0,0,0)` | Dispense Combination (0,0,0) |
+| 🟢 **PASS** | `Dispense Combination (1,0,0)` | Dispense Combination (1,0,0) |
+| 🟢 **PASS** | `Dispense Combination (0,1,0)` | Dispense Combination (0,1,0) |
+| 🟢 **PASS** | `Dispense Combination (0,0,1)` | Dispense Combination (0,0,1) |
+| 🟢 **PASS** | `Dispense Combination (1,1,0)` | Dispense Combination (1,1,0) |
+| 🟢 **PASS** | `Dispense Combination (1,0,1)` | Dispense Combination (1,0,1) |
+| 🟢 **PASS** | `Dispense Combination (0,1,1)` | Dispense Combination (0,1,1) |
+| 🟢 **PASS** | `Dispense Combination (1,1,1)` | Dispense Combination (1,1,1) |
+| 🟢 **PASS** | `Serial Garbage Prefix Filtering` | Serial Garbage Prefix Filtering |
+| 🟢 **PASS** | `Concatenated Multi-Packet Stream` | Concatenated Multi-Packet Stream |
+| 🟢 **PASS** | `Unknown Command Error Emission` | Unknown Command Error Emission |
+| 🟢 **PASS** | `Serial Buffer Overflow Boundary Limit` | Serial Buffer Overflow Boundary Limit |
+| 🟢 **PASS** | `Incomplete Frame Reset on New Start Delimiter` | Incomplete Frame Reset On New Start Delimiter |
+
+
+---
+
+## ⚙️ 6. Environment & CI Telemetry
+
+| Parameter | Value |
+| :--- | :--- |
+| **Operating System** | `Linux 6.17.0-1022-azure` |
+| **Host Architecture** | `x86_64` |
+| **Python Version** | `3.12.13` |
+| **Rust Edition** | `2024 (cargo / rustc stable)` |
+| **Git Commit** | [`c5c0b49`](https://github.com/Apoo711/visor-project/commit/c5c0b49) |
+| **Branch** | `main` |
+| **Timestamp** | `2026-08-18 08:21:05 UTC` |

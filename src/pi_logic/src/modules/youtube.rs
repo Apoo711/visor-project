@@ -31,6 +31,15 @@ pub struct Snippet {
     pub title: String,
 }
 
+/// Formats a clean, privacy-enhanced YouTube embed URL configured for kiosk playback.
+///
+/// Configures parameters for autoplay, controls, JavaScript API integration, and fullscreen support.
+///
+/// # Arguments
+/// * `video_id` - The alphanumeric YouTube video identifier string.
+///
+/// # Returns
+/// * `String` - Fully qualified embed URL pointing to `youtube-nocookie.com`.
 pub fn format_embed_url(video_id: &str) -> String {
     format!(
         "https://www.youtube-nocookie.com/embed/{}?autoplay=1&controls=1&enablejsapi=1&rel=0&fs=1",
@@ -38,6 +47,15 @@ pub fn format_embed_url(video_id: &str) -> String {
     )
 }
 
+/// Parses the first valid video search result from a YouTube Data API v3 search response.
+///
+/// Extracts the video ID, standard watch URL, and snippet title if available.
+///
+/// # Arguments
+/// * `response` - Deserialized YouTube search response structure.
+///
+/// # Returns
+/// * `Option<(String, String, String)>` - `Some((video_id, watch_url, title))` if a video is found, or `None` if the items list is empty or lacks a video ID.
 pub fn parse_youtube_search_response(
     response: YouTubeSearchResponse,
 ) -> Option<(String, String, String)> {
@@ -51,6 +69,16 @@ pub fn parse_youtube_search_response(
     None
 }
 
+/// Resolves the standby interface location into a valid browser URL.
+///
+/// If a local file exists at `standby_file_path`, canonicalizes it into a `file:///` URI.
+/// Otherwise, returns an inline HTML data URI fallback displaying the standby interface.
+///
+/// # Arguments
+/// * `standby_file_path` - Relative or absolute path to the local standby HTML asset.
+///
+/// # Returns
+/// * `String` - Browser-navigable URL (either `file:///...` or `data:text/html,...`).
 pub fn resolve_standby_url(standby_file_path: &str) -> String {
     if Path::new(standby_file_path).exists() {
         if let Ok(abs_path) = std::fs::canonicalize(standby_file_path) {
@@ -64,12 +92,20 @@ pub fn resolve_standby_url(standby_file_path: &str) -> String {
     "data:text/html,<html><body style='background:%23080c14;color:%23fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;'><h1 style='font-size:3rem;'>VISOR: Ready to Help</h1></body></html>".to_string()
 }
 
+/// Client for interacting with the YouTube Data API v3 to search for first-aid instruction videos.
 pub struct YouTubeClient {
     client: Client,
     api_key: String,
 }
 
 impl YouTubeClient {
+    /// Creates a new `YouTubeClient` instance.
+    ///
+    /// # Arguments
+    /// * `api_key` - Google Cloud YouTube Data API key.
+    ///
+    /// # Returns
+    /// * `Self` - Initialized `YouTubeClient`.
     pub fn new(api_key: String) -> Self {
         Self {
             client: Client::new(),
@@ -77,6 +113,14 @@ impl YouTubeClient {
         }
     }
 
+    /// Queries the YouTube Data API for the most relevant embeddable instructional video matching the query.
+    ///
+    /// # Arguments
+    /// * `query` - Search terms (e.g., "how to apply bandage to cut").
+    ///
+    /// # Returns
+    /// * `Result<Option<(String, String, String)>, Box<dyn std::error::Error>>` - `Ok(Some((video_id, watch_url, title)))` on match,
+    ///   `Ok(None)` if no video matched, or an `Err` on HTTP/API failure.
     pub async fn fetch_top_video(
         &self,
         query: &str,
@@ -103,6 +147,7 @@ impl YouTubeClient {
     }
 }
 
+/// Controls the Chromium fullscreen kiosk display for showing standby screens and first-aid videos.
 pub struct DisplayManager {
     _browser: Browser,
     page: Page,
@@ -110,6 +155,13 @@ pub struct DisplayManager {
 }
 
 impl DisplayManager {
+    /// Launches an automated Chromium headless/kiosk browser instance navigating to the standby screen.
+    ///
+    /// # Arguments
+    /// * `standby_file_path` - Path to the local standby UI HTML file.
+    ///
+    /// # Returns
+    /// * `Result<Self, Box<dyn std::error::Error>>` - Managed browser display instance on success, or launch error on failure.
     pub async fn new(standby_file_path: &str) -> Result<Self, Box<dyn std::error::Error>> {
         let standby_url = resolve_standby_url(standby_file_path);
 
@@ -148,12 +200,26 @@ impl DisplayManager {
         })
     }
 
+    /// Navigates the kiosk display back to the idle "VISOR Ready to Help" standby UI screen.
+    ///
+    /// # Returns
+    /// * `Result<(), Box<dyn std::error::Error>>` - Ok on successful page navigation.
     pub async fn show_standby(&self) -> Result<(), Box<dyn std::error::Error>> {
         info!("Returning display to 'VISOR Ready to Help' standby screen...");
         self.page.goto(&self.standby_url).await?;
         Ok(())
     }
 
+    /// Navigates the kiosk display to the given YouTube video, monitors playback until the video finishes, and returns to the standby screen.
+    ///
+    /// Polls the HTML5 `<video>` element status inside the browser context, waiting for either the
+    /// `ended` event or a maximum timeout (5 minutes) before safely restoring the standby display.
+    ///
+    /// # Arguments
+    /// * `video_id` - Alphanumeric YouTube video identifier to play.
+    ///
+    /// # Returns
+    /// * `Result<(), Box<dyn std::error::Error>>` - Ok on successful completion of playback and return to standby.
     pub async fn play_video_and_return_to_standby(
         &self,
         video_id: &str,

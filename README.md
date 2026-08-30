@@ -2,7 +2,17 @@
 **Year 12 Systems Engineering SAT Project**  
 Designed and Developed by Aryan Gupta
 
+<div align="center">
+
+[![Live Telemetry Dashboard](https://img.shields.io/badge/Live%20Telemetry%20Dashboard-GitHub%20Pages-00d2ff?style=for-the-badge&logo=github&logoColor=white)](https://apoo711.github.io/visor-project/)
+[![Test Report](https://img.shields.io/badge/Verification%20Report-48%20%2F%2048%20Passed-brightgreen?style=for-the-badge&logo=checkmarx&logoColor=white)](./tests/TEST_REPORT.md)
+[![Rust](https://img.shields.io/badge/Rust-2024%20Edition-orange?style=for-the-badge&logo=rust&logoColor=white)](./src/pi_logic/)
+[![Hardware](https://img.shields.io/badge/Hardware-Pi%205%20%2B%20Arduino%20Uno-8A2BE2?style=for-the-badge&logo=raspberrypi&logoColor=white)](./src/arduino_control/)
+
+</div>
+
 ---
+
 
 ## Project Overview
 

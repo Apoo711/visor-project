@@ -39,6 +39,13 @@ void processCommand(const char* cmd);
 void dispenseSupplies(bool dispenseBandage, bool dispenseAlcohol/*, bool dispenseGauze*/);
 void runDispenserCycle(Servo& servo, uint8_t pin);
 
+/**
+ * @brief Initializes Arduino I/O pins, serial communication, and blinks status LED.
+ *
+ * Configures the status LED pin as output, establishes Serial at 9600 baud,
+ * resets servo trigger lines, emits STATUS:READY to the host Raspberry Pi,
+ * and performs a 3-blink initialization sequence.
+ */
 void setup() {
   pinMode(PIN_LED_STATUS, OUTPUT);
   digitalWrite(PIN_LED_STATUS, LOW);
@@ -61,6 +68,12 @@ void setup() {
   }
 }
 
+/**
+ * @brief Main polling loop for receiving framing packets from the serial interface.
+ *
+ * Reads incoming characters into a static buffer framed by '<' and '>'.
+ * Once a full packet is framed, triggers command processing via processCommand().
+ */
 void loop() {
   while (Serial.available() > 0) {
     char c = Serial.read();
@@ -91,6 +104,17 @@ void loop() {
   }
 }
 
+/**
+ * @brief Parses and executes received protocol commands.
+ *
+ * Supported commands:
+ *  - <DISP:b,a,g>: Parses binary flags for bandage, alcohol pad, and gauze.
+ *                  Sends ACK:DISP:b,a,g and initiates servo actuation or holds.
+ *  - <PING>: Responds with PONG for heartbeat/liveness testing.
+ *  - Unknown commands emit ERR:UNKNOWN_COMMAND:<cmd>.
+ *
+ * @param cmd Null-terminated character string containing the framed command.
+ */
 void processCommand(const char* cmd) {
   int b = 0, a = 0;
   // int g = 0; // [DISABLED: 3rd item gauze pad]
@@ -118,7 +142,17 @@ void processCommand(const char* cmd) {
   }
 }
 
-void dispenseSupplies(bool doBandage, bool doAlcohol /*, bool doGauze*/) {
+/**
+ * @brief Coordinates sequential dispensing of requested first-aid items.
+ *
+ * Turns on the active indicator LED and executes runDispenserCycle() for each
+ * enabled item in sequence, emitting status strings over Serial.
+ *
+ * @param doBandage Whether to actuate the bandage dispenser servo.
+ * @param doAlcohol Whether to actuate the alcohol pad dispenser servo.
+ * @param doGauze   Whether to actuate the gauze pad dispenser servo.
+ */
+void dispenseSupplies(bool doBandage, bool doAlcohol, bool doGauze) {
   digitalWrite(PIN_LED_STATUS, HIGH);
 
   if (doBandage) {
@@ -141,6 +175,16 @@ void dispenseSupplies(bool doBandage, bool doAlcohol /*, bool doGauze*/) {
   Serial.println("STATUS:DISPENSE_COMPLETE");
 }
 
+/**
+ * @brief Drives an individual continuous rotation/position servo through a push-and-retract cycle.
+ *
+ * Attaches the servo to its control pin, drives it forward (TIME_PUSH_MS) to eject supply,
+ * pauses briefly (TIME_PAUSE_MS), drives in reverse (TIME_RETRACT_MS) to reset mechanism,
+ * and detaches the servo to prevent continuous power draw and jitter.
+ *
+ * @param servo Reference to the Servo object.
+ * @param pin   PWM/Digital pin number associated with the servo.
+ */
 void runDispenserCycle(Servo& servo, uint8_t pin) {
   servo.attach(pin);
   delay(50);
