@@ -1,11 +1,11 @@
 """
-Autodesk Fusion 360 Python Script: Smart First Aid Cartridge, Extended Pusher Sled, & FS90R Pinion
+Autodesk Fusion 360 Python Script: Smart First Aid Cartridge, Extended Sled with Retaining Guide Rail, & FS90R Pinion
 Configured for: 53mm x 63mm x 7mm items (5-stack capacity)
-Fix: Universal Part/Assembly document handling to prevent single-component RuntimeError.
-Features:
-- Extended rack length (120mm) with 26 continuous gear teeth.
-- Integrated rear bracket platform with 27.5mm pitch M2 mounting holes for the FS90R servo.
-- 12T mating pinion gear with a 4.8mm press-fit bore for the FS90R output spline.
+Updates:
+- Added a vertical retaining guide rail on the -X edge of the rack (opposite the servo mount) to capture the pinion gear and prevent axial slip/derailing.
+- 0.5mm running tolerance between the gear face and guide rail.
+- Verified rear hole clearance (4.5mm horizontal margin, 3.5mm vertical margin).
+- Full Part/Assembly document auto-compatibility.
 Note: Fusion 360 internal API units are CENTIMETERS (cm). All mm inputs are converted via MM_TO_CM (0.1).
 """
 
@@ -30,55 +30,62 @@ def run(context):
         # ==============================================================================
         # 1. PARAMETRIC MODEL DIMENSIONS (in millimeters)
         # ==============================================================================
-        MM_TO_CM = 0.1  # 1 mm = 0.1 cm
+        MM_TO_CM = 0.1  # Conversion multiplier: 1 mm = 0.1 cm
 
         # Item & Stack Parameters
-        item_width = 53.0       # Width of the item (X-axis)
-        item_length = 63.0      # Length of the item (Y-axis)
-        item_thickness = 7.0    # Thickness of a single item
-        stack_count = 5         # Number of items to hold
+        item_width = 53.0       # Bandage width (X-axis)
+        item_length = 63.0      # Bandage length (Y-axis)
+        item_thickness = 7.0    # Single bandage thickness
+        stack_count = 5         # Internal capacity
         stack_height = item_thickness * stack_count  # 35.0 mm internal capacity
         
         # Dispensing & Clearance Parameters
-        slot_height = item_thickness + 1.0  # 8.0 mm (single-packet clearance)
+        slot_height = item_thickness + 1.0  # 8.0 mm (single-packet exit slot)
         tolerance = 1.5         # Side clearance gap
-        wall_thick = 3.0        # Thickness of outer shell walls and floor
+        wall_thick = 3.0        # Outer shell wall and floor thickness
 
         # Sled Parameters
         sled_width = item_width # 53.0 mm
         sled_length = 20.0      # 20.0 mm along Y-axis
         sled_height = 6.0       # 6.0 mm height
-        sled_chamfer = 3.5      # Chamfer distance for leading wedge
-        sled_rear_gap = 1.0     # Clearance gap from cavity rear wall
+        sled_chamfer = 3.5      # Leading wedge chamfer
+        sled_rear_gap = 1.0     # Rear resting gap
 
-        # Cavity Length: Fits BOTH Packet (63mm) AND Sled (20mm + 1mm gap)
+        # Cavity & Shell Lengths (Houses 63mm packet + 20mm sled simultaneously)
         inner_length = item_length + sled_length + sled_rear_gap + (tolerance * 2)  # 87.0 mm
         outer_length = inner_length + (wall_thick * 2)                               # 93.0 mm
         inner_width = item_width + (tolerance * 2)                                   # 56.0 mm
         outer_width = inner_width + (wall_thick * 2)                                 # 62.0 mm
 
-        # EXTENDED RACK PARAMETERS (Adjust rack_length here as needed)
-        rack_width = 10.0       # 10.0 mm wide gear rack base
+        # Rack Parameters
+        rack_base_x_min = -5.5  # Left edge of rack arm base (mm)
+        rack_base_x_max = 5.0   # Right edge of rack arm base (mm)
         rack_height = 8.0       # 8.0 mm tall base
-        rack_length = 120.0     # Extended to 120.0 mm for generous positioning margin
+        rack_length = 120.0     # 120.0 mm extended arm length
         tooth_pitch = 4.0       # 4.0 mm pitch between teeth
         tooth_height = 1.8      # 1.8 mm tooth depth
 
-        # FS90R Servo & Mount Parameters
-        servo_hole_pitch = 27.5 # Spacing between M2 mounting holes on FS90R flanges
-        m2_hole_dia = 2.4       # Pilot hole diameter for M2 mounting screws
-        mount_platform_l = 40.0 # Length of extended rear mounting platform
+        # Gear Anti-Slip Retaining Guide Rail Parameters (-X side)
+        # Sits from X = -5.5mm to X = -3.5mm (2.0mm thick wall)
+        # Pinion sits at X = -3.0mm to +3.0mm, giving a 0.5mm running clearance to the rail
+        rail_thickness = 2.0    # 2.0 mm thick retaining fence
+        rail_height = 3.5       # 3.5 mm high above rack base (1.7mm taller than teeth)
+
+        # FS90R Standoff Mount Parameters (+X side)
+        servo_hole_pitch = 27.5 # Spacing between M2 mounting holes
+        m2_hole_dia = 2.4       # Pilot hole for M2 screws
+        mount_platform_l = 40.0 # Length of extended rear platform
 
         # FS90R Pinion Gear Parameters
         pinion_teeth_count = 12 # 12 teeth
-        fs90r_spline_dia = 4.8  # 4.8 mm FS90R servo output spline bore
-        pinion_thickness = 6.0  # 6.0 mm gear face width
+        fs90r_spline_dia = 4.8  # 4.8 mm FS90R servo spline bore
+        pinion_thickness = 6.0  # 6.0 mm face width
 
         # Cutout Parameters
-        front_slot_w = item_width + tolerance  # 54.5 mm front dispensing slit
+        front_slot_w = item_width + tolerance  # 54.5 mm front slot
         front_slot_h = slot_height             # 8.0 mm
-        rear_hole_w = 20.0                     # 20.0 mm wide rear access hole
-        rear_hole_h = 15.0                     # 15.0 mm high rear access hole
+        rear_hole_w = 20.0                     # 20.0 mm rear hole (X: -10.0 to +10.0)
+        rear_hole_h = 15.0                     # 15.0 mm rear hole height (Z: floor to floor+15)
 
         # ==============================================================================
         # 2. CONVERT DIMENSIONS TO CENTIMETERS (Fusion API Units)
@@ -94,7 +101,7 @@ def run(context):
         cut_margin_cm = 0.5
 
         # ==============================================================================
-        # 3. DOCUMENT TYPE CHECK (Assembly vs Part Design document)
+        # 3. DOCUMENT TYPE CHECK (Assembly vs Part Design Environment)
         # ==============================================================================
         use_components = True
         try:
@@ -197,7 +204,6 @@ def run(context):
         platformSketch.name = "Servo_Mount_Platform"
         pLines = platformSketch.sketchCurves.sketchLines
         
-        # Extended floor plate behind the rear wall
         pLines.addTwoPointRectangle(
             adsk.core.Point3D.create(-outer_w_cm / 2.0, outer_l_cm / 2.0, 0),
             adsk.core.Point3D.create(outer_w_cm / 2.0, outer_l_cm / 2.0 + mount_l_cm, 0)
@@ -207,19 +213,17 @@ def run(context):
         platformExtInput.setDistanceExtent(False, adsk.core.ValueInput.createByReal(floor_t_cm))
         cartExtrudes.add(platformExtInput)
 
-        # Standoffs with M2 mounting holes for the FS90R
+        # Standoffs with M2 mounting holes for the FS90R (+X side)
         standoffSketch = cartridgeComp.sketches.add(cartFloorPlane)
         standoffSketch.name = "FS90R_Standoffs"
         sLines = standoffSketch.sketchCurves.sketchLines
-        sCircles = standoffSketch.sketchCurves.sketchCircles
 
-        standoff_x = 18.0 * MM_TO_CM   # Offset to the right of the rack path
+        standoff_x = 18.0 * MM_TO_CM
         standoff_y_center = outer_l_cm / 2.0 + (mount_l_cm * 0.5)
         pitch_half_cm = (servo_hole_pitch / 2.0) * MM_TO_CM
         standoff_h_cm = 12.0 * MM_TO_CM
         m2_r_cm = (m2_hole_dia / 2.0) * MM_TO_CM
 
-        # Standoff solid pads
         sLines.addTwoPointRectangle(
             adsk.core.Point3D.create(standoff_x - 0.4, standoff_y_center - pitch_half_cm - 0.4, 0),
             adsk.core.Point3D.create(standoff_x + 0.4, standoff_y_center - pitch_half_cm + 0.4, 0)
@@ -253,7 +257,7 @@ def run(context):
             cartExtrudes.add(hCutInput)
 
         # ==============================================================================
-        # 4. COMPONENT 2: PUSHER SLED & EXTENDED RACK ARM
+        # 4. COMPONENT 2: PUSHER SLED WITH GEAR RETAINING GUIDE RAIL
         # ==============================================================================
         if use_components:
             sledOcc = rootComp.occurrences.addNewComponent(adsk.core.Matrix3D.create())
@@ -279,7 +283,7 @@ def run(context):
         sled_y_max = (inner_l_cm / 2.0) - (sled_rear_gap * MM_TO_CM)
         sled_y_min = sled_y_max - sled_l_cm
 
-        # Sled Body
+        # --- Step 4.1: Sled Body ---
         sledSketch = sledComp.sketches.add(sledFloorPlane)
         sledSketch.name = "Sled_Base_Profile"
         sledLines = sledSketch.sketchCurves.sketchLines
@@ -295,7 +299,7 @@ def run(context):
         sledBody = sledBodyExt.bodies.item(0)
         sledBody.name = "Pusher Sled"
 
-        # Front Leading Wedge Chamfer
+        # --- Step 4.2: Front Leading Wedge Chamfer ---
         target_z = floor_t_cm + sled_h_cm
         topFrontEdge = None
 
@@ -315,8 +319,9 @@ def run(context):
             chamferInput.setToEqualDistance(adsk.core.ValueInput.createByReal(sled_chamfer * MM_TO_CM))
             sledChamfers.add(chamferInput)
 
-        # Extended Gear Rack Arm
-        rack_w_cm = rack_width * MM_TO_CM
+        # --- Step 4.3: Extended Gear Rack Arm Base ---
+        rack_xmin_cm = rack_base_x_min * MM_TO_CM
+        rack_xmax_cm = rack_base_x_max * MM_TO_CM
         rack_h_cm = rack_height * MM_TO_CM
         rack_l_cm = rack_length * MM_TO_CM
 
@@ -324,8 +329,8 @@ def run(context):
         rackSketch.name = "Rack_Arm_Profile"
         rackLines = rackSketch.sketchCurves.sketchLines
         rackLines.addTwoPointRectangle(
-            adsk.core.Point3D.create(-rack_w_cm / 2.0, sled_y_max, 0),
-            adsk.core.Point3D.create(rack_w_cm / 2.0, sled_y_max + rack_l_cm, 0)
+            adsk.core.Point3D.create(rack_xmin_cm, sled_y_max, 0),
+            adsk.core.Point3D.create(rack_xmax_cm, sled_y_max + rack_l_cm, 0)
         )
         rackProfile = rackSketch.profiles.item(0)
 
@@ -334,14 +339,36 @@ def run(context):
         rackExtInput.setDistanceExtent(False, adsk.core.ValueInput.createByReal(rack_h_cm))
         sledExtrudes.add(rackExtInput)
 
-        # Rack Teeth Generation
-        tooth_pitch_cm = tooth_pitch * MM_TO_CM
-        tooth_h_cm = tooth_height * MM_TO_CM
-        num_teeth = int((rack_length - 15.0) / tooth_pitch)  # Generates 26 teeth along extended length
-
+        # --- Step 4.4: Anti-Slip Retaining Guide Rail (Flange alongside teeth) ---
+        # Top plane of the rack base arm
         rackTopPlaneInput = sledPlanes.createInput()
         rackTopPlaneInput.setByOffset(sledComp.xYConstructionPlane, adsk.core.ValueInput.createByReal(floor_t_cm + rack_h_cm))
         rackTopPlane = sledPlanes.add(rackTopPlaneInput)
+
+        guideRailSketch = sledComp.sketches.add(rackTopPlane)
+        guideRailSketch.name = "Gear_Retaining_Rail_Profile"
+        grLines = guideRailSketch.sketchCurves.sketchLines
+        
+        rail_w_cm = rail_thickness * MM_TO_CM
+        rail_h_cm = rail_height * MM_TO_CM
+        rail_xmin = rack_xmin_cm
+        rail_xmax = rack_xmin_cm + rail_w_cm  # Sits from -5.5mm to -3.5mm
+
+        grLines.addTwoPointRectangle(
+            adsk.core.Point3D.create(rail_xmin, sled_y_max, 0),
+            adsk.core.Point3D.create(rail_xmax, sled_y_max + rack_l_cm, 0)
+        )
+        grProfile = guideRailSketch.profiles.item(0)
+
+        grExtInput = sledExtrudes.createInput(grProfile, adsk.fusion.FeatureOperations.JoinFeatureOperation)
+        grExtInput.participantBodies = [sledBody]
+        grExtInput.setDistanceExtent(False, adsk.core.ValueInput.createByReal(rail_h_cm))
+        sledExtrudes.add(grExtInput)
+
+        # --- Step 4.5: Rack Gear Teeth (Bounded on the left by the guide rail) ---
+        tooth_pitch_cm = tooth_pitch * MM_TO_CM
+        tooth_h_cm = tooth_height * MM_TO_CM
+        num_teeth = int((rack_length - 15.0) / tooth_pitch)  # 26 teeth
 
         toothSketch = sledComp.sketches.add(rackTopPlane)
         toothSketch.name = "Single_Tooth_Profile"
@@ -350,9 +377,10 @@ def run(context):
         t_base_len = tooth_pitch_cm * 0.55
         t_start_y = sled_y_max + (tooth_pitch_cm * 1.5)
         
+        # Teeth span from rail inner face (-3.5mm) to rack right edge (+5.0mm)
         toothLines.addTwoPointRectangle(
-            adsk.core.Point3D.create(-rack_w_cm / 2.0, t_start_y, 0),
-            adsk.core.Point3D.create(rack_w_cm / 2.0, t_start_y + t_base_len, 0)
+            adsk.core.Point3D.create(rail_xmax, t_start_y, 0),
+            adsk.core.Point3D.create(rack_xmax_cm, t_start_y + t_base_len, 0)
         )
         toothProfile = toothSketch.profiles.item(0)
 
@@ -453,7 +481,7 @@ def run(context):
         boreCutInput.setDistanceExtent(False, adsk.core.ValueInput.createByReal(gear_t_cm * 1.5))
         pinionExtrudes.add(boreCutInput)
 
-        # Align Pinion Gear into initial mesh position above the rack
+        # Position Pinion Gear (Centered on X=0, captured on its left face by the rail at X=-3.5mm)
         pinion_mesh_y_cm = outer_l_cm / 2.0 + (mount_l_cm * 0.5)
         pinion_mesh_z_cm = floor_t_cm + rack_h_cm + tooth_h_cm + r_pitch_cm
         
@@ -476,7 +504,7 @@ def run(context):
                 moveFeats.add(moveInput)
 
         app.activeViewport.fit()
-        ui.messageBox('Generated successfully with 120mm extended rack and universal document support!')
+        ui.messageBox('Generated successfully with anti-slip retaining rail, extended rack, and servo mount!')
 
     except Exception:
         if ui:
