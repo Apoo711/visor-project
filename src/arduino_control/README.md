@@ -52,11 +52,11 @@ This directory contains the C++ firmware for the Arduino Uno microcontroller res
    - If a servo slowly drifts or creeps when powered before `servo.detach()` is called, gently turn the trimpot using a small screwdriver until the motor stops moving completely at signal `90`.
 
 2. **Stroke Timing Customization**:
-   In `arduino_control.ino`, the timing constants are set to match the rack length to ensure that the servo extends and retracts far enough to push the item out:
+   In `arduino_control.ino`, the timing constants are set to match the rack length and actuation speed (~50 RPM for 1.7 seconds) to ensure that the servo extends and retracts far enough to push the item out:
    ```cpp
-   const unsigned long TIME_PUSH_MS    = 2200; // Extend rack to push item out
+   const unsigned long TIME_PUSH_MS    = 1700; // Extend rack to push item out (1.7s @ ~50 RPM)
    const unsigned long TIME_PAUSE_MS   = 150;  // Dwell buffer
-   const unsigned long TIME_RETRACT_MS = 2300; // Retract rack to home
+   const unsigned long TIME_RETRACT_MS = 1700; // Retract rack to home (1.7s @ ~50 RPM)
    ```
 
 ---

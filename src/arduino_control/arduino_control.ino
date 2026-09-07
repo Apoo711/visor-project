@@ -18,13 +18,21 @@ const uint8_t PIN_SERVO_ALCOHOL = 10;
 // const uint8_t PIN_SERVO_GAUZE = 11; // [DISABLED: 2-item dispensing only]
 const uint8_t PIN_LED_STATUS = 13;
 
+// --- Continuous Rotation Servo Tuning (FEETECH FS90R) ---
+// FS90R maximum speed @ 5V is ~110-120 RPM (at 0 and 180).
+// Center stop position is 90 (~1500us pulse width).
+// For ~50 RPM (~45% throttle under rack load):
+//  - Forward: 90 - 42 = 48 (range: 45 - 48)
+//  - Reverse: 90 + 42 = 132 (range: 132 - 135)
 const int SERVO_STOP = 90;
-const int SERVO_FORWARD = 45;
-const int SERVO_REVERSE = 135;
+const int SERVO_FORWARD = 48;   // ~50 RPM forward push
+const int SERVO_REVERSE = 132;  // ~50 RPM reverse retract
 
-const unsigned long TIME_PUSH_MS = 2200;
-const unsigned long TIME_PAUSE_MS = 150;
-const unsigned long TIME_RETRACT_MS = 2300;
+// --- Dispense Cycle Timing ---
+// Actuates at ~50 RPM for 1.7 seconds (1700 ms) for positive rack travel & ejection:
+const unsigned long TIME_PUSH_MS = 1700;     // 1.7s push stroke @ ~50 RPM
+const unsigned long TIME_PAUSE_MS = 150;     // Dwell buffer before retract
+const unsigned long TIME_RETRACT_MS = 1700;  // 1.7s retract stroke to reset rack
 
 Servo servoBandage;
 Servo servoAlcohol;
