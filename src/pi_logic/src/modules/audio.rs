@@ -93,8 +93,8 @@ impl WakeWordDetector {
         let mut config = RustpotterConfig::default();
         config.fmt.sample_rate = sample_rate as usize;
         config.fmt.channels = 1;
-        config.detector.avg_threshold = 0.5;
-        config.detector.threshold = 0.55;
+        config.detector.avg_threshold = 0.0;
+        config.detector.threshold = 0.40;
 
         let mut rustpotter = Rustpotter::new(&config)
             .map_err(|e| format!("Failed to create Rustpotter detector: {}", e))?;
