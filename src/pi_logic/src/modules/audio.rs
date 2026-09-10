@@ -91,25 +91,38 @@ impl WakeWordDetector {
         );
 
         let mut config = RustpotterConfig::default();
+        config.fmt.sample_rate = sample_rate as usize;
+        config.fmt.channels = 1;
         config.detector.avg_threshold = 0.5;
         config.detector.threshold = 0.55;
 
         let mut rustpotter = Rustpotter::new(&config)
             .map_err(|e| format!("Failed to create Rustpotter detector: {}", e))?;
 
-        let wakeword_path = "assets/visor_help.rpw";
-        if Path::new(wakeword_path).exists() {
+        // Check for custom wakeword models (e.g. visor_help.rpw, alexa.rpw)
+        let candidate_models = ["assets/visor_help.rpw", "assets/alexa.rpw"];
+        let mut loaded_any_model = false;
+
+        for model_path in candidate_models {
+            if Path::new(model_path).exists() {
+                let model_name = Path::new(model_path)
+                    .file_stem()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("wakeword");
+                info!(
+                    "Loading custom Rustpotter wakeword model '{}' from '{}'",
+                    model_name, model_path
+                );
+                rustpotter
+                    .add_wakeword_from_file(model_name, model_path)
+                    .map_err(|e| format!("Failed to load wakeword file '{}': {}", model_path, e))?;
+                loaded_any_model = true;
+            }
+        }
+
+        if !loaded_any_model {
             info!(
-                "Loading custom Rustpotter wakeword model from '{}'",
-                wakeword_path
-            );
-            rustpotter
-                .add_wakeword_from_file("visor_help", wakeword_path)
-                .map_err(|e| format!("Failed to load wakeword file: {}", e))?;
-        } else {
-            info!(
-                "No '{}' model file found. Registering default 'visor_help' template.",
-                wakeword_path
+                "No custom model file found in assets/. Registering default 'visor_help' template."
             );
             let wakeword_ref = WakewordRef {
                 name: "visor_help".to_string(),
