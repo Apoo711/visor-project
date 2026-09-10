@@ -97,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 info!("Arduino Acknowledgment: {}", ack);
                             }
 
-                            if let Some(query) = &analysis.video_search_query {
+                            if let Some(query) = &analysis.video_search_query && !query.trim().is_empty() {
                                 info!("Searching YouTube for query: '{}'", query);
                                 match yt_client.fetch_top_video(query).await {
                                     Ok(Some((video_id, watch_url, title))) => {

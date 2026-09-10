@@ -82,9 +82,27 @@ pub fn build_request_body(base64_string: &str) -> serde_json::Value {
     })
 }
 
+/// Cleans markdown code fences (```json ... ```) from a model output if present.
+pub fn clean_json_str(s: &str) -> &str {
+    let trimmed = s.trim();
+    if let Some(stripped) = trimmed.strip_prefix("```json") {
+        if let Some(inner) = stripped.strip_suffix("```") {
+            return inner.trim();
+        }
+    } else if let Some(stripped) = trimmed.strip_prefix("```") {
+        if let Some(inner) = stripped.strip_suffix("```") {
+            return inner.trim();
+        }
+    }
+    trimmed
+}
+
 /// Extracts the raw JSON response text string from a Gemini API response envelope.
 ///
-/// Supports both interactions API format (`output[0].text`) and candidates format (`candidates[0].content.parts[0].text`).
+/// Supports:
+/// 1. Classic interactions API format (`output[0].text`).
+/// 2. Candidates format (`candidates[0].content.parts[0].text`).
+/// 3. Thinking / reasoning steps format (`steps[...]` where step type is `model_output`).
 ///
 /// # Arguments
 /// * `res` - Parsed JSON response from the API call.
@@ -92,10 +110,40 @@ pub fn build_request_body(base64_string: &str) -> serde_json::Value {
 /// # Returns
 /// * `Result<&str, String>` - Extracted inner text slice, or an error description if format is unexpected.
 pub fn extract_response_text(res: &serde_json::Value) -> Result<&str, String> {
-    res["output"][0]["text"]
-        .as_str()
-        .or_else(|| res["candidates"][0]["content"]["parts"][0]["text"].as_str())
-        .ok_or_else(|| format!("Unexpected API response format: {}", res))
+    if let Some(text) = res["output"][0]["text"].as_str() {
+        return Ok(text);
+    }
+    if let Some(text) = res["candidates"][0]["content"]["parts"][0]["text"].as_str() {
+        return Ok(text);
+    }
+    if let Some(steps) = res["steps"].as_array() {
+        // First look for model_output step
+        for step in steps {
+            if step["type"] == "model_output" {
+                if let Some(content) = step["content"].as_array() {
+                    for item in content {
+                        if let Some(text) = item["text"].as_str() {
+                            return Ok(text);
+                        }
+                    }
+                }
+                if let Some(text) = step["text"].as_str() {
+                    return Ok(text);
+                }
+            }
+        }
+        // Fallback to any step containing text in its content
+        for step in steps {
+            if let Some(content) = step["content"].as_array() {
+                for item in content {
+                    if let Some(text) = item["text"].as_str() {
+                        return Ok(text);
+                    }
+                }
+            }
+        }
+    }
+    Err(format!("Unexpected API response format: {}", res))
 }
 
 /// Client for communicating with the Google Gemini Multimodal API.
@@ -148,10 +196,12 @@ impl GeminiClient {
             .json::<serde_json::Value>()
             .await?;
 
-        let response_text = extract_response_text(&res)
+        let raw_text = extract_response_text(&res)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
 
-        let analysis: VisorAnalysis = serde_json::from_str(response_text)?;
+        let cleaned_text = clean_json_str(raw_text);
+
+        let analysis: VisorAnalysis = serde_json::from_str(cleaned_text)?;
 
         Ok(analysis)
     }
@@ -301,9 +351,48 @@ mod tests {
     }
 
     #[test]
+    fn test_extract_response_text_steps_format() {
+        let payload = json!({
+            "status": "completed",
+            "steps": [
+                {
+                    "type": "thought",
+                    "signature": "EvIECu8EARF..."
+                },
+                {
+                    "type": "model_output",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n  \"can_help\": true,\n  \"reasoning\": \"Minor cut\",\n  \"dispense\": {\"bandage\": true, \"alcohol_pad\": true},\n  \"video_search_query\": \"treat minor cut\"\n}"
+                        }
+                    ]
+                }
+            ]
+        });
+        let text = extract_response_text(&payload).expect("Should extract text from steps format");
+        assert!(text.contains("\"can_help\": true"));
+
+        let analysis: VisorAnalysis = serde_json::from_str(text).expect("Should parse as VisorAnalysis");
+        assert!(analysis.can_help);
+        assert!(analysis.dispense.bandage);
+        assert_eq!(analysis.video_search_query.as_deref(), Some("treat minor cut"));
+    }
+
+    #[test]
+    fn test_clean_json_str_with_fences() {
+        let fenced = "```json\n{\"can_help\": true}\n```";
+        assert_eq!(clean_json_str(fenced), "{\"can_help\": true}");
+
+        let plain = "{\"can_help\": false}";
+        assert_eq!(clean_json_str(plain), "{\"can_help\": false}");
+    }
+
+    #[test]
     fn test_extract_response_text_invalid_format() {
         let payload = json!({ "error": "Invalid API Key" });
         let result = extract_response_text(&payload);
         assert!(result.is_err());
     }
 }
+
