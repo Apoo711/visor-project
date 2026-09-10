@@ -184,7 +184,7 @@ impl DisplayManager {
         #[cfg(target_os = "linux")]
         {
             if !Path::new("/usr/bin/chromium-browser").exists() && Path::new("/usr/bin/chromium").exists() {
-                builder = builder.with_executable("/usr/bin/chromium");
+                builder = builder.chrome_executable("/usr/bin/chromium");
             }
         }
 
