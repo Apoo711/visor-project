@@ -55,15 +55,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let standby_path = "assets/standby.html";
     let display_manager = DisplayManager::new(standby_path).await?;
 
-    let wake_detector = WakeWordDetector::new()?;
+    let _wake_detector = WakeWordDetector::new().ok();
 
-    info!("V.I.S.O.R. is fully initialized and awaiting voice triggers.");
+    info!("V.I.S.O.R. is fully initialized and ready.");
 
     loop {
-        info!(">>> Awaiting wake word: 'VISOR help'...");
-        wake_detector.wait_for_wake_word().await;
+        info!("=========================================");
+        info!(">>> DEMO MODE: Preparing for visual diagnosis in 15 seconds...");
+        info!("=========================================");
 
-        info!(">>> Wake word detected! Initiating visual diagnosis...");
+        for sec in (1..=15).rev() {
+            info!(">>> Auto-trigger countdown: taking snapshot in {} second(s)...", sec);
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        }
+
+        info!(">>> Countdown complete! Capturing camera snapshot for visual diagnosis...");
 
         match capture_frame("/tmp/visor_frame.jpg") {
             Ok(image_bytes) => {

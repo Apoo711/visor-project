@@ -170,17 +170,25 @@ impl DisplayManager {
             standby_url
         );
 
-        let (browser, mut handler) = Browser::launch(
-            BrowserConfig::builder()
-                .arg("--kiosk")
-                .arg("--autoplay-policy=no-user-gesture-required")
-                .arg("--no-sandbox")
-                .arg("--disable-infobars")
-                .arg("--check-for-update-interval=31536000")
-                .arg("--disable-session-crashed-bubble")
-                .build()?,
-        )
-        .await?;
+        let mut builder = BrowserConfig::builder();
+        builder = builder
+            .with_head()
+            .arg("--kiosk")
+            .arg("--autoplay-policy=no-user-gesture-required")
+            .arg("--no-sandbox")
+            .arg("--disable-infobars")
+            .arg("--check-for-update-interval=31536000")
+            .arg("--disable-session-crashed-bubble")
+            .arg("--user-data-dir=/tmp/visor_kiosk_profile");
+
+        #[cfg(target_os = "linux")]
+        {
+            if !Path::new("/usr/bin/chromium-browser").exists() && Path::new("/usr/bin/chromium").exists() {
+                builder = builder.with_executable("/usr/bin/chromium");
+            }
+        }
+
+        let (browser, mut handler) = Browser::launch(builder.build()?).await?;
 
         tokio::spawn(async move {
             while let Some(event) = handler.next().await {
