@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Test Status](https://img.shields.io/badge/Test%20Suite-44%20%2F%2044%20Passed-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)
+![Test Status](https://img.shields.io/badge/Test%20Suite-46%20%2F%2046%20Passed-brightgreen?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Pass Rate](https://img.shields.io/badge/Pass%20Rate-100.0%25-success?style=for-the-badge&logo=checkmarx&logoColor=white)
 ![Rust](https://img.shields.io/badge/Rust-2024%20Edition-orange?style=for-the-badge&logo=rust&logoColor=white)
 ![Hardware](https://img.shields.io/badge/Hardware-Pi%205%20%2B%20Arduino%20Uno-8A2BE2?style=for-the-badge&logo=raspberrypi&logoColor=white)
@@ -13,10 +13,10 @@
 
 > [!IMPORTANT]
 > **Executive Verification Summary:**
-> - **Overall Status:** **44 / 44 Tests Passed (100% Pass Rate)**
-> - **Execution Timestamp:** `2026-09-10 09:46:02 UTC`
+> - **Overall Status:** **46 / 46 Tests Passed (100% Pass Rate)**
+> - **Execution Timestamp:** `2026-09-10 09:53:36 UTC`
 > - **Target Platform:** `Linux x86_64` (Target: Linux ARM64 Raspberry Pi 5 & ATmega328P Arduino Uno)
-> - **Git Reference:** [`main`](https://github.com/Apoo711/visor-project/tree/main) (`301b1a3`)
+> - **Git Reference:** [`main`](https://github.com/Apoo711/visor-project/tree/main) (`9020229`)
 
 ---
 
@@ -25,8 +25,8 @@
 ### 1.1. Test Suite Composition
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#0284c7', 'lineColor': '#64748b', 'secondaryColor': '#a855f7', 'tertiaryColor': '#10b981', 'quaternaryColor': '#f59e0b', 'pie1': '#38bdf8', 'pie2': '#f59e0b', 'pie3': '#10b981', 'pie4': '#a855f7' } } }%%
-pie title V.I.S.O.R. Test Coverage Distribution (44 Total Tests)
-    "Rust Pi Logic Units" : 27
+pie title V.I.S.O.R. Test Coverage Distribution (46 Total Tests)
+    "Rust Pi Logic Units" : 29
     "Arduino Protocol & Firmware" : 10
     "Latency Benchmarks" : 4
     "End-to-End Pipelines" : 3
@@ -84,12 +84,12 @@ flowchart TD
 ================================================================================
  Suite Name                       Scope                  Tests   Passed   Failed
 --------------------------------------------------------------------------------
- Rust Unit Tests (lib.rs)         Pi Logic Modules         27      27       0 
+ Rust Unit Tests (lib.rs)         Pi Logic Modules         29      29       0 
  Rust Integration Tests           End-to-End Pipelines      3       3        0 
  Rust Latency Benchmarks          Micro-benchmarks          4       4        0 
  Arduino Protocol Suite (Python)  Firmware & Framing       10      10       0 
 --------------------------------------------------------------------------------
- TOTAL TESTS EXECUTED                                      44      44       0 
+ TOTAL TESTS EXECUTED                                      46      46       0 
  OVERALL STATUS                                                   [ PASS (100%) ]
 ================================================================================
 ```
@@ -102,8 +102,8 @@ Validates packet framing, baud rate communication, binary flag encoding, and res
 | 🟢 **PASS** | `test_format_dispense_command_all_combinations` | Format Dispense Command All Combinations |
 | 🟢 **PASS** | `test_format_ping_command` | Format Ping Command |
 | 🟢 **PASS** | `test_parse_serial_response_ack` | Parse Serial Response Ack |
-| 🟢 **PASS** | `test_parse_serial_response_errors_and_edge_cases` | Parse Serial Response Errors And Edge Cases |
 | 🟢 **PASS** | `test_parse_serial_response_ready` | Parse Serial Response Ready |
+| 🟢 **PASS** | `test_parse_serial_response_errors_and_edge_cases` | Parse Serial Response Errors And Edge Cases |
 | 🟢 **PASS** | `test_parse_serial_response_status_messages` | Parse Serial Response Status Messages |
 
 
@@ -112,12 +112,14 @@ Validates structured JSON request payload generation, base64 image encapsulation
 
 | Status | Test Identifier | Scope / Verification Target |
 | :---: | :--- | :--- |
+| 🟢 **PASS** | `test_clean_json_str_with_fences` | Clean Json Str With Fences |
 | 🟢 **PASS** | `test_build_request_body_structure` | Build Request Body Structure |
 | 🟢 **PASS** | `test_cannot_help_emergency_deserialization` | Cannot Help Emergency Deserialization |
 | 🟢 **PASS** | `test_dispense_items_boolean_deserialization` | Dispense Items Boolean Deserialization |
 | 🟢 **PASS** | `test_extract_response_text_candidates_format` | Extract Response Text Candidates Format |
 | 🟢 **PASS** | `test_extract_response_text_interactions_format` | Extract Response Text Interactions Format |
 | 🟢 **PASS** | `test_extract_response_text_invalid_format` | Extract Response Text Invalid Format |
+| 🟢 **PASS** | `test_extract_response_text_steps_format` | Extract Response Text Steps Format |
 | 🟢 **PASS** | `test_malformed_json_failure` | Malformed Json Failure |
 | 🟢 **PASS** | `test_missing_dispense_field_failure` | Missing Dispense Field Failure |
 | 🟢 **PASS** | `test_omitted_video_search_query` | Omitted Video Search Query |
@@ -128,8 +130,8 @@ Validates YouTube Data API v3 search response tokenization, video ID extraction,
 
 | Status | Test Identifier | Scope / Verification Target |
 | :---: | :--- | :--- |
-| 🟢 **PASS** | `test_format_embed_url` | Format Embed Url |
 | 🟢 **PASS** | `test_parse_youtube_search_response_empty_items` | Parse Youtube Search Response Empty Items |
+| 🟢 **PASS** | `test_format_embed_url` | Format Embed Url |
 | 🟢 **PASS** | `test_parse_youtube_search_response_missing_video_id` | Parse Youtube Search Response Missing Video Id |
 | 🟢 **PASS** | `test_parse_youtube_search_response_valid` | Parse Youtube Search Response Valid |
 | 🟢 **PASS** | `test_resolve_standby_url_fallback` | Resolve Standby Url Fallback |
@@ -164,8 +166,8 @@ Simulated full pipeline integration flows located in `src/pi_logic/tests/pipelin
 
 | Status | Test Identifier | Scope / Verification Target |
 | :---: | :--- | :--- |
-| 🟢 **PASS** | `test_end_to_end_all_items_dispense_pipeline_flow` | End To End All Items Dispense Pipeline Flow |
 | 🟢 **PASS** | `test_end_to_end_emergency_hold_pipeline_flow` | End To End Emergency Hold Pipeline Flow |
+| 🟢 **PASS** | `test_end_to_end_all_items_dispense_pipeline_flow` | End To End All Items Dispense Pipeline Flow |
 | 🟢 **PASS** | `test_end_to_end_minor_injury_pipeline_flow` | End To End Minor Injury Pipeline Flow |
 
 
@@ -259,6 +261,6 @@ Firmware behavioral and serial framing tests executed via Python emulation in `t
 | **Host Architecture** | `x86_64` |
 | **Python Version** | `3.12.14` |
 | **Rust Edition** | `2024 (cargo / rustc stable)` |
-| **Git Commit** | [`301b1a3`](https://github.com/Apoo711/visor-project/commit/301b1a3) |
+| **Git Commit** | [`9020229`](https://github.com/Apoo711/visor-project/commit/9020229) |
 | **Branch** | `main` |
-| **Timestamp** | `2026-09-10 09:46:02 UTC` |
+| **Timestamp** | `2026-09-10 09:53:36 UTC` |
