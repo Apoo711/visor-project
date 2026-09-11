@@ -6,7 +6,6 @@ use rpi::modules::{
     gemini::{VisorAnalysis, build_request_body},
 };
 
-
 #[test]
 fn test_audio_normalization_and_downmix_latency() {
     // Simulate 1 second of stereo 48kHz audio (96,000 samples)
@@ -20,7 +19,8 @@ fn test_audio_normalization_and_downmix_latency() {
     let duration = start.elapsed();
 
     assert_eq!(normalized.len(), 48_000);
-    // Processing 1 full second of audio should take well under 5 milliseconds on modern CPU
+    // Processing 1 full second of audio should take well under 5 milliseconds on
+    // modern CPU
     println!(
         "[LATENCY BENCHMARK] Audio downmixing (96k samples): {:?} (target < 5ms)",
         duration
@@ -73,7 +73,7 @@ fn test_serial_packet_formatting_and_parsing_latency() {
         let a = (i % 3) == 0;
         // let g = (i % 5) == 0;
 
-        let cmd = format_dispense_command(b, a/*, g*/);
+        let cmd = format_dispense_command(b, a /* , g */);
         let _resp = parse_serial_response("ACK:DISP:1,0");
         let _ = cmd.len();
     }

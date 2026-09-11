@@ -9,10 +9,12 @@ use log::{error, info};
 use rustpotter::{Rustpotter, RustpotterConfig, WakewordRef};
 use tokio::sync::mpsc::{self, Receiver};
 
-/// Downmixes an interleaved multi-channel floating-point audio slice into single-channel mono PCM samples.
+/// Downmixes an interleaved multi-channel floating-point audio slice into
+/// single-channel mono PCM samples.
 ///
 /// If `channels` <= 1, returns a clone of the input slice.
-/// For stereo or multi-channel audio, computes the arithmetic mean across all channel samples in each audio frame.
+/// For stereo or multi-channel audio, computes the arithmetic mean across all
+/// channel samples in each audio frame.
 ///
 /// # Arguments
 /// * `data` - Interleaved f32 audio samples.
@@ -29,9 +31,11 @@ pub fn downmix_f32_to_mono(data: &[f32], channels: u16) -> Vec<f32> {
         .collect()
 }
 
-/// Converts interleaved 16-bit signed integer (i16) PCM samples to normalized mono floating-point (f32) samples in the `[-1.0, 1.0]` range.
+/// Converts interleaved 16-bit signed integer (i16) PCM samples to normalized
+/// mono floating-point (f32) samples in the `[-1.0, 1.0]` range.
 ///
-/// Averages across channels for multi-channel inputs and scales values by 32768.0.
+/// Averages across channels for multi-channel inputs and scales values by
+/// 32768.0.
 ///
 /// # Arguments
 /// * `data` - Interleaved i16 audio samples from the input capture device.
@@ -44,28 +48,29 @@ pub fn convert_i16_to_f32_mono(data: &[i16], channels: u16) -> Vec<f32> {
         data.iter().map(|&s| s as f32 / 32768.0).collect()
     } else {
         data.chunks_exact(channels as usize)
-            .map(|frame| {
-                (frame.iter().map(|&s| s as f32).sum::<f32>() / channels as f32) / 32768.0
-            })
+            .map(|frame| (frame.iter().map(|&s| s as f32).sum::<f32>() / channels as f32) / 32768.0)
             .collect()
     }
 }
 
-/// Real-time wake word detection engine listening on the system microphone using Rustpotter.
+/// Real-time wake word detection engine listening on the system microphone
+/// using Rustpotter.
 pub struct WakeWordDetector {
     _stream: Option<cpal::Stream>,
     rx: Arc<tokio::sync::Mutex<Receiver<()>>>,
 }
 
 impl WakeWordDetector {
-    /// Initializes the microphone input stream via CPAL and sets up the Rustpotter keyword detector.
+    /// Initializes the microphone input stream via CPAL and sets up the
+    /// Rustpotter keyword detector.
     ///
-    /// Configures audio callback handlers to downmix incoming audio frames to mono f32
-    /// and feed them to the keyword spotting model.
+    /// Configures audio callback handlers to downmix incoming audio frames to
+    /// mono f32 and feed them to the keyword spotting model.
     ///
     /// # Returns
-    /// * `Result<Self, Box<dyn std::error::Error>>` - Active detector with running background audio stream,
-    ///   or an error if microphone hardware initialization fails.
+    /// * `Result<Self, Box<dyn std::error::Error>>` - Active detector with
+    ///   running background audio stream, or an error if microphone hardware
+    ///   initialization fails.
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let (tx, rx) = mpsc::channel(32);
 
@@ -213,7 +218,8 @@ impl WakeWordDetector {
         })
     }
 
-    /// Asynchronously blocks until the "VISOR help" wake word is triggered by the audio input stream.
+    /// Asynchronously blocks until the "VISOR help" wake word is triggered by
+    /// the audio input stream.
     pub async fn wait_for_wake_word(&self) {
         let mut rx_guard = self.rx.lock().await;
         let _ = rx_guard.recv().await;
@@ -270,5 +276,3 @@ mod tests {
         assert!((res[1] - (-0.000015)).abs() < 1e-4);
     }
 }
-
-

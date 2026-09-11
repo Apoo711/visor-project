@@ -25,8 +25,10 @@ fn test_end_to_end_minor_injury_pipeline_flow() {
     assert!(ensure_parent_dir(test_frame_path.to_str().unwrap()).is_ok());
 
     let dummy_image_bytes = vec![0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46]; // JPEG header
-    let base64_image =
-        base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &dummy_image_bytes);
+    let base64_image = base64::Engine::encode(
+        &base64::engine::general_purpose::STANDARD,
+        &dummy_image_bytes,
+    );
     let request_payload = build_request_body(&base64_image);
     assert_eq!(request_payload["model"], "gemini-3.7-flash");
 
@@ -129,8 +131,8 @@ fn test_end_to_end_emergency_hold_pipeline_flow() {
         "video_search_query": null
     }"#;
 
-    let analysis: VisorAnalysis =
-        serde_json::from_str(simulated_emergency_json).expect("Emergency triage deserialization failed");
+    let analysis: VisorAnalysis = serde_json::from_str(simulated_emergency_json)
+        .expect("Emergency triage deserialization failed");
     assert!(!analysis.can_help);
     assert_eq!(
         analysis.dispense,

@@ -20,14 +20,16 @@ pub struct VisorAnalysis {
 
 /// Constructs the JSON payload for the Gemini 3.7 Flash API request.
 ///
-/// Encodes the first-aid analysis prompt, base64-encoded image input, and a structured
-/// JSON schema specifying the required response format (`can_help`, `reasoning`, `dispense`, `video_search_query`).
+/// Encodes the first-aid analysis prompt, base64-encoded image input, and a
+/// structured JSON schema specifying the required response format (`can_help`,
+/// `reasoning`, `dispense`, `video_search_query`).
 ///
 /// # Arguments
 /// * `base64_string` - Base64 encoded JPEG image data.
 ///
 /// # Returns
-/// * `serde_json::Value` - Complete JSON request payload formatted for the Gemini API.
+/// * `serde_json::Value` - Complete JSON request payload formatted for the
+///   Gemini API.
 pub fn build_request_body(base64_string: &str) -> serde_json::Value {
     let prompt_text = "Analyze this image to evaluate the user's first-aid needs. \
         Available resources for dispensing: Bandage (Normal Size), Alcohol Pad. \
@@ -82,7 +84,8 @@ pub fn build_request_body(base64_string: &str) -> serde_json::Value {
     })
 }
 
-/// Cleans markdown code fences (```json ... ```) from a model output if present.
+/// Cleans markdown code fences (```json ... ```) from a model output if
+/// present.
 pub fn clean_json_str(s: &str) -> &str {
     let trimmed = s.trim();
     if let Some(stripped) = trimmed.strip_prefix("```json") {
@@ -97,18 +100,21 @@ pub fn clean_json_str(s: &str) -> &str {
     trimmed
 }
 
-/// Extracts the raw JSON response text string from a Gemini API response envelope.
+/// Extracts the raw JSON response text string from a Gemini API response
+/// envelope.
 ///
 /// Supports:
 /// 1. Classic interactions API format (`output[0].text`).
 /// 2. Candidates format (`candidates[0].content.parts[0].text`).
-/// 3. Thinking / reasoning steps format (`steps[...]` where step type is `model_output`).
+/// 3. Thinking / reasoning steps format (`steps[...]` where step type is
+///    `model_output`).
 ///
 /// # Arguments
 /// * `res` - Parsed JSON response from the API call.
 ///
 /// # Returns
-/// * `Result<&str, String>` - Extracted inner text slice, or an error description if format is unexpected.
+/// * `Result<&str, String>` - Extracted inner text slice, or an error
+///   description if format is unexpected.
 pub fn extract_response_text(res: &serde_json::Value) -> Result<&str, String> {
     if let Some(text) = res["output"][0]["text"].as_str() {
         return Ok(text);
@@ -167,16 +173,19 @@ impl GeminiClient {
         }
     }
 
-    /// Sends raw image bytes to the Gemini 3.7 Flash API for medical diagnosis and supply dispensing recommendations.
+    /// Sends raw image bytes to the Gemini 3.7 Flash API for medical diagnosis
+    /// and supply dispensing recommendations.
     ///
-    /// Encodes the snapshot to base64, submits the structured prompt, and deserializes
-    /// the model's structured JSON output into a `VisorAnalysis` instance.
+    /// Encodes the snapshot to base64, submits the structured prompt, and
+    /// deserializes the model's structured JSON output into a
+    /// `VisorAnalysis` instance.
     ///
     /// # Arguments
     /// * `image_bytes` - Byte slice containing the JPEG image frame.
     ///
     /// # Returns
-    /// * `Result<VisorAnalysis, Box<dyn std::error::Error>>` - Structured assessment on success, or an error on failure.
+    /// * `Result<VisorAnalysis, Box<dyn std::error::Error>>` - Structured
+    ///   assessment on success, or an error on failure.
     pub async fn analyze_image(
         &self,
         image_bytes: &[u8],
@@ -373,10 +382,14 @@ mod tests {
         let text = extract_response_text(&payload).expect("Should extract text from steps format");
         assert!(text.contains("\"can_help\": true"));
 
-        let analysis: VisorAnalysis = serde_json::from_str(text).expect("Should parse as VisorAnalysis");
+        let analysis: VisorAnalysis =
+            serde_json::from_str(text).expect("Should parse as VisorAnalysis");
         assert!(analysis.can_help);
         assert!(analysis.dispense.bandage);
-        assert_eq!(analysis.video_search_query.as_deref(), Some("treat minor cut"));
+        assert_eq!(
+            analysis.video_search_query.as_deref(),
+            Some("treat minor cut")
+        );
     }
 
     #[test]
@@ -395,4 +408,3 @@ mod tests {
         assert!(result.is_err());
     }
 }
-
